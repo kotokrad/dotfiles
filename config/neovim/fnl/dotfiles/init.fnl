@@ -22,7 +22,7 @@
 (require :dotfiles.plugins.treesitter)
 (require :dotfiles.plugins.trouble)
 (require :dotfiles.plugins.which-key)
-; (require :dotfiles.plugins.material)
+; (require :dotfiles.plugins.neorg)
 
 ;; Non-lua plugin options
 (require :dotfiles.plugins.misc)

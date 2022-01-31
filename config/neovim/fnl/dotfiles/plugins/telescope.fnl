@@ -14,7 +14,11 @@
                        "--with-filename" "--line-number" "--column"
                        "--smart-case" "--hidden" "--follow"
                         "-g" "!.git/"
-                        "-g" "!*.lock"]})
+                        "-g" "!*.lock"]
+   :extensions {:fzy_native {:override_generic_sorter true
+                             :override_file_sorter true}}})
+
+(telescope.load_extension "fzy_native")
 
 (defn no-preview-theme []
   (themes.get_dropdown {:borderchars

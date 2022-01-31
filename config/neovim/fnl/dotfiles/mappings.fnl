@@ -2,7 +2,8 @@
   {autoload {nvim aniseed.nvim
              nu aniseed.nvim.util
              core aniseed.core
-             util dotfiles.util}})
+             util dotfiles.util}
+   require-macros [dotfiles.macros]})
 
 ;; Generic mapping configuration.
 (util.noremap :n :<space> :<nop>)
@@ -41,6 +42,7 @@
 ;; Easy clipboard access
 (util.noremap :n :+ "\"+")
 (util.noremap :i :<c-p> "<c-r>\"")
+(util.noremap :v :<M-c> "\"+y")
 
 ;; Remove last search highlight
 (util.noremap :n :<c-c> "<cmd>let @/ = ''<cr>")
@@ -82,8 +84,11 @@
                          "Toggle undotree"]}})
 
 ;; Delete hidden buffers
-(defn delete-hidden-buffers []
-  (let [visible-bufs (->> (nvim.fn.range 1 (nvim.fn.tabpagenr :$))
+(defn delete-hidden-buffers [force]
+  (let [wipeout (if force
+                  nvim.ex.bwipeout_
+                  nvim.ex.bwipeout)
+        visible-bufs (->> (nvim.fn.range 1 (nvim.fn.tabpagenr :$))
                           (core.map nvim.fn.tabpagebuflist)
                           (unpack)
                           (core.concat))]
@@ -92,15 +97,23 @@
            (fn [bufnr]
              (and (nvim.fn.bufexists bufnr)
                   (= -1 (nvim.fn.index visible-bufs bufnr)))))
-         (#(nvim.ex.bwipeout (unpack $1))))))
+         (#(wipeout (unpack $1))))))
 
-(util.map-group {:prefix :<leader>
-                 :silent true}
-                {:o [delete-hidden-buffers "Only (delete hidden buffers) "]})
+(defn delete-hidden-buffers! []
+  (delete-hidden-buffers true))
+
+(util.map-group {:prefix :<leader>}
+                {:b {:name "buffer"
+                     :o [delete-hidden-buffers "Only (delete hidden buffers) "]
+                     :O [delete-hidden-buffers! "Only! (force delete hidden buffers) "]}})
+
+(util.map-group {:prefix :<leader>}
+                {:t {:name "terminal"
+                     :t (util.tassign [":TermExec size=16 cmd=''<left>" "Terminal"] {:silent false})}})
 
 
 ;; Save file as sudo on files that require root permission
 ; map('c', 'w!!', 'execute \'silent! write !sudo tee % >/dev/null\' <bar> edit!', opts)
 
 ;; read escape in terminal .. double tap to go back to insert mode
-; (util.noremap :t :<esc><esc> "<c-\\><c-n>")
+(util.noremap :t :<esc><esc> "<c-\\><c-n>")

@@ -21,6 +21,13 @@
                                      "console.log('${1:value} =>', ${1:value})")
                                (snip "Debug object with console.dir"
                                      :dir
-                                     "console.dir(${1:value}, { depth: null })")]})
+                                     "console.dir(${1:value}, { depth: null })")
+                               (snip "anonymous function"
+                                     :f
+                                     "() => ")
+                               (snip "anonymous function with arguments"
+                                     :fn
+                                     "$1 => $2")]})
 
 (ls.filetype_extend :typescript [:javascript])
+(ls.filetype_extend :typescriptreact [:javascript])

@@ -53,10 +53,15 @@
 (nvim.ex.set "formatoptions-=c formatoptions-=r formatoptions-=o")
 (nvim.ex.filetype "plugin indent on")
 
+;; enable undercurl in wezterm
+(nvim.ex.let "&t_Cs = '\\e[4:3m'")
+(nvim.ex.let "&t_Ce = '\\e[4:0m'")
+
 ;; theme
 (set nvim.o.background :dark)
 (set nvim.g.gruvbox_contrast_dark :hard)
 (nvim.ex.colorscheme :gruvbox)
+; (nvim.ex.colorscheme :kanagawa)
 
 ;; autocmds
 ; (nvim.ex.autocmd "FileType * setlocal formatoptions-=c formatoptions-=r formatoptions-=o")

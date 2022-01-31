@@ -193,6 +193,8 @@ in
       gs = "git status";
       ww = "vim -c VimwikiIndex";
       jr = ''janet -e "(import spork/netrepl) (netrepl/server)"'';
+      # dump keystrokes https://web.archive.org/web/20191220190018/https://www.drbunsen.org/vim-croquet/
+      vim = ''nvim -w ~/.vimlog "$@"'';
     };
 
     git.enable = true;

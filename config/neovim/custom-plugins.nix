@@ -22,16 +22,6 @@
     nativeBuildInputs = [ pkgs.mlton ];
   };
 
-  vim-submode = buildVimPlugin {
-    name = "vim-submode";
-    src = fetchFromGitHub {
-      owner  = "kana";
-      repo   = "vim-submode";
-      rev    = "d29de4f";
-      sha256 = "sha256:1qf0ryyjbv3yw916dnvqlzqvpskg2sbkwn46a2zph71p16sg6cp7";
-    };
-  };
-
   janet-vim = buildVimPlugin {
     name = "janet-vim";
     src = fetchFromGitHub {
@@ -71,12 +61,12 @@
 
   nvim-treesitter = buildVimPlugin {
     pname = "nvim-treesitter";
-    version = "1ca3213";
+    version = "d3dbd45";
     src = fetchFromGitHub {
       owner  = "nvim-treesitter";
       repo   = "nvim-treesitter";
-      rev    = "1ca3213";
-      sha256 = "sha256-sk6oacFJKQK6lJw/rFWqBSCAQz/XcW8Q269qIy+LsX8=";
+      rev    = "d3dbd45";
+      sha256 = "sha256-cHcD88h2rZrj4+ReN16pXTgKoPS8K5Li9ufiAF5uYt4=";
     };
   };
 

@@ -1,5 +1,9 @@
 (module dotfiles.plugins.nvim-cmp
-  {autoload {nvim aniseed.nvim}})
+  {autoload {nvim aniseed.nvim
+             lush lush
+             hsl lush.hsl
+             fennel fennel
+             gruvbox gruvbox}})
 
 (fn fg [group color]
   (nvim.ex.hi (.. group " guibg=" color)))
@@ -16,6 +20,49 @@
 
 (link "CmpItemMenu" "CmpItemKind")
 
+
+;   bright_red = hsl("#fb4934"),
+;   bright_green = hsl("#b8bb26"),
+;   bright_yellow = hsl("#fabd2f"),
+;   bright_blue = hsl("#83a598"),
+;   bright_purple = hsl("#d3869b"),
+;   bright_aqua = hsl("#8ec07c"),
+;   bright_orange = hsl("#fe8019"),)
+
+; \ '#353535','#d83925','#a8a521','#e0a82a',
+; \ '#54969a','#c07998','#7aab7d','#c9bba4',
+; \ '#8f8277','#fe6143','#c4c431','#fcc73c',
+; \ '#94b3a8','#dd9aab','#9ec98e','#efe1bf'
+
+; GruvboxBlue     #83a598 -> #54969a
+
+; GruvboxRed      #fb4632 -> #d83925
+
+(def red (hsl "#d83925"))  ; #54969a
+(def blue (hsl "#54969a")) ; #d83925
+
+(def theme
+  (fn []
+    {:GruvboxRed {:fg red}
+     :GruvboxRedBold {:fg red :gui "bold"}
+     :GruvboxBlue {:fg blue}
+     :GruvboxBlueBold {:fg blue :gui "bold"}
+     :GruvboxRedSign {:fg red}
+     :GruvboxBlueSign {:fg blue}}))
+
+(defn .> [object method-name ...]
+  ((. object method-name) ...))
+
+(defn gruvbox_custom []
+  (-> (lush.extends [gruvbox])
+      (.>   :with thm)
+      (lush)))
+
+; (gruvbox_custom)
+
+; (set _G.gruvbox_custom (fn [] (lush spec)))
+       ; :GruvboxRedSign {:fg red :bg sign_column}
+       ; :GruvboxBlueSign {:fg blue :bg sign_column}})))
 
 ; -- Comments
 ; if ui.italic_comments then

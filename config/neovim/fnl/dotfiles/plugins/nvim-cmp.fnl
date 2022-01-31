@@ -3,7 +3,6 @@
              nvim aniseed.nvim
              cmp cmp
              luasnip luasnip
-             fennel fennel
              autopairs-cmp nvim-autopairs.completion.cmp}})
 
 (local lspkind-icons
@@ -34,7 +33,7 @@
    :TypeParameter ""})
 
 (cmp.setup {:snippet {:expand (fn [args] (luasnip.lsp_expand args.body))}
-            :mapping {:<tab> (fn [fallback]
+            :mapping {:<Tab> (fn [fallback]
                                (if (cmp.visible)
                                    (cmp.select_next_item)
                                    (luasnip.jumpable 1)
@@ -55,7 +54,9 @@
             :sources [{:name "nvim_lsp"}
                       {:name "luasnip"}
                       {:name "buffer"}
-                      {:name "path"}]
+                      {:name "path"}
+                      {:name "conjure"}
+                      {:name "neorg"}]
             :formatting {:format (fn [entry item]
                                    (set item.kind (string.format "%s %s" (a.get lspkind-icons item.kind) item.kind))
                                    (set item.menu (a.get {:nvim_lsp "[LSP]"
@@ -64,13 +65,3 @@
                                                           :luasnip "[Snip]"}
                                                          entry.source.name))
                                    item)}})
-
-;; nvim-autopairs config
-(autopairs-cmp.setup
-  {:map_cr true ; map <CR> on insert mode
-   :map_complete false ; it will auto insert `(` (map_char) after select function or method item)
-   :mauto_select true ; automatically select the first item
-   :minsert true ; use insert confirm behavior instead of replace
-   ;; modifies the function or method delimiter by filetypes})
-   :mmap_char {:all "("
-               :tex "{"}})

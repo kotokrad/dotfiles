@@ -10,7 +10,9 @@ let
   myVimPlugins = with plugins; [
   # UI
     gruvbox-nvim
+    kanagawa-nvim
     lualine-nvim
+    lush-nvim
     neoscroll-nvim
     nvim-colorizer-lua
     nvim-web-devicons
@@ -36,29 +38,30 @@ let
     nvim-tree-lua
     plenary-nvim                     # lua utils
     tabular                          # align code verically (haskell etc)
-    telescope-fzy-native-nvim        # FIXME: what is it?
+    telescope-fzy-native-nvim        # FZY style sorter that is compiled
     telescope-nvim
     toggleterm-nvim                  # floating termial; used only for lazygit for now
+    undotree
     vim-commentary                   # comment some code
     vim-repeat                       # repeat plugin commands with (.)
     vim-sensible                     # sensible defaults
     vim-signature                    # display marks as signs
     vim-surround                     # quickly edit surroundings (brackets, html tags, etc)
     which-key-nvim                   # spacemacs-like menu and key bindings
-    vim-submode
-    undotree
     # impatient-nvim                   # speed up loading lua modules
     # nvim-notify                      # used with `sniprun`
 
   # DEV
     cmp-buffer
+    cmp-conjure
     cmp-nvim-lsp
     cmp-path
     cmp_luasnip
-    conjure                          # evaluate some LISP
+    conjure                          # interactive lisp development
     formatter-nvim
     gitsigns-nvim
     haskell-vim
+    janet-vim
     lsp-colors-nvim                  # add missing LSP highlight groups for unsupported color schemes
     luasnip
     numb-nvim                        # peek line number
@@ -67,29 +70,28 @@ let
     nvim-lspconfig
     nvim-lsputils                    # used for code actions
     nvim-treesitter
+    nvim-treesitter-textobjects
+    parinfer-rust
     playground                       # tree-sitter playground
     purescript-vim
     trouble-nvim                     # diagnostic list
     vim-css-color                    # preview css colors
     vim-easy-align
     vim-jsx-pretty
-    # vim-matchup
     vim-nix                          # nix support (highlighting, etc)
-    parinfer-rust
-    vim-solidity
     vim-sexp
+    null-ls-nvim                     # lsp
     # nvim-spectre
     # sniprun                          # evaluate code snippets
     # symbols-outline-nvim             # TODO: use `aerial.nvim` instead
-    janet-vim
 
   # TEMP
     vim-better-sml                   # SML plugin; NOTE: only for course
 
   # MISC
     neorg
-    vimwiki                          # Notes
     neuron-nvim                      # Also notes (testing)
+    vimwiki                          # Notes
 
     # TODO check out
     # ctrlsf-vim                     # edit file in place after searching with ripgrep
@@ -111,24 +113,24 @@ let
     # vim-tmux                       # syntax highlighting for tmux conf file and more
   ];
 
-  neovim-nightly = pkgs.callPackage ./nightly.nix {};
+  # neovim-nightly = pkgs.callPackage ./nightly.nix {};
 in
 {
   programs.neovim = {
     enable       = true;
     extraConfig  = builtins.readFile ./init.vim;
-    package      = neovim-nightly;
+    # package      = neovim-nightly;
     plugins      = myVimPlugins;
-    viAlias      = true;
-    vimAlias     = true;
+    vimAlias     = false;
     vimdiffAlias = true;
     withNodeJs   = true;
-    withPython3  = true;
+    withPython3  = false;
+    withRuby     = false;
   };
 
   xdg.configFile = {
     "nvim/queries".source = ./queries;
     "nvim/fnl".source = ./fnl;
-    "nvim/ftplugin".source = ./ftplugin;
+    # "nvim/ftplugin".source = ./ftplugin;
   };
 }

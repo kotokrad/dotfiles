@@ -1,5 +1,7 @@
-(module dotfiles.plugins.nvim-web-devicons)
+(module dotfiles.plugins.nvim-web-devicons
+  {autoload {devicons nvim-web-devicons}})
 
-(let [nvim-web-devicons (require :nvim-web-devicons)]
-  (when nvim-web-devicons
-    (nvim-web-devicons.setup)))
+(devicons.setup
+  {:override {"spec.ts" {:icon ""
+                         :color "#928374"
+                         :name "SpecTs"}}})

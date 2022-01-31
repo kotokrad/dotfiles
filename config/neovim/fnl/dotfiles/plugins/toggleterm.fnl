@@ -15,5 +15,5 @@
 
 
 (util.map-group {:prefix :<leader>}
-                {:g {:name "+Git"
+                {:g {:name "+git"
                      :g ["<cmd>lua require('dotfiles.plugins.toggleterm').lazygit_toggle()<cr>" "Lazygit"]}})

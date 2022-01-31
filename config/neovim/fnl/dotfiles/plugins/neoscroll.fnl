@@ -21,7 +21,4 @@
 (config.set_mappings {:<c-u> [:scroll ["-vim.wo.scroll" :true :200]]
                       :<c-d> [:scroll ["vim.wo.scroll" :true :200]]
                       :<c-y> [:scroll [:-0.10 :false :70]]
-                      :<c-e> [:scroll [:0.10 :false :70]]
-                      :zt [:zt [:200]]
-                      :zz [:zz [:200]]
-                      :zb [:zb [:200]]})
+                      :<c-e> [:scroll [:0.10 :false :70]]})
