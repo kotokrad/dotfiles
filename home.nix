@@ -43,6 +43,7 @@ let
     pulsemixer           # pulseaudio mixer
     tldr                 # summary of a man page
     tree                 # display files in a tree view
+    maim                        # screenshot tool
     unzip
     wget
     xclip                # clipboard support (also for neovim)

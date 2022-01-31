@@ -25,5 +25,6 @@ return {
       { key="Insert", mods="SHIFT", action=wezterm.action{PasteFrom="Clipboard"} },
       { key="=", mods="CTRL", action="IncreaseFontSize" },
       { key="-", mods="CTRL", action="DecreaseFontSize" },
-    }
+    },
+    term = "wezterm"
 }

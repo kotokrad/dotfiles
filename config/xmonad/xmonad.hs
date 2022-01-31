@@ -63,15 +63,19 @@ myTerminal = "wezterm"
 
 myScreensaver = "dm-tool switch-to-greeter"
 
-mySelectScreenshot = "sleep 0.2; scrot -sfe 'xclip -selection clipboard -t image/png -i $f && rm $f'"
+mySelectScreenshot = "maim -s -u | xclip -selection clipboard -t image/png -i"
 
-myScreenshot = "scrot -e 'xclip -selection clipboard -t image/png -i $f && rm $f'"
+myScreenshot = "maim -u | xclip -selection clipboard -t image/png"
 
 myDrun = "rofi -show drun -matching fuzzy"
 
 myRun = "rofi -show run"
 
+myClipboard = "rofi -modi 'clipboard:greenclip print' -show clipboard -run-command '{cmd}'"
+
 myVimSessions = "vim-sessions"
+
+myTokens = "tokens"
 
 myFileExplorer = "thunar"
 
@@ -112,18 +116,22 @@ myManageHook = composeAll
     , className =? "kitty"                        --> viewShift myWs2Console
     , className =? "org.wezfurlong.wezterm"       --> viewShift myWs2Console
     , className =? "vim-ide"                      --> viewShift myWs3Code
+    , className =? ".thunar-wrapped_"             --> viewShift myWs4FS
     , className =? "Thunar"                       --> viewShift myWs4FS
+    , className =? "Transmission-gtk"             --> viewShift myWs4FS
     , className =? "Steam"                        --> viewShift myWs4FS
     , className =? "TelegramDesktop"              --> viewShift myWs5Chat
     , className =? ".blueman-manager-wrapped"     --> viewShift myWs6Misc
+    , className =? "File-roller"                  --> doCenterFloat
     , className =? "Mate-calc"                    --> doCenterFloat
+    , className =? "feh"                          --> doFullFloat
     , className =? "trayer"                       --> doIgnore
     , resource  =? "desktop_window"               --> doIgnore
     , isFullscreen                                --> (doF W.focusDown <+> doFullFloat)
     -- , isFullscreen                             --> doFullFloat
     ]
     where
-      viewShift ::WorkspaceId -> ManageHook
+      viewShift :: WorkspaceId -> ManageHook
       viewShift = doF . liftM2 (.) W.greedyView W.shift
 
 
@@ -215,30 +223,31 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
      spawn myScreensaver)
 
   -- dmenu: drun
-  -- Use this to launch programs without a key binding.
   , ((modMask, xK_w),
      spawn myDrun)
 
   -- dmenu: run
-  -- Use this to launch programs without a key binding.
   , ((modMask, xK_r),
      spawn myRun)
 
   -- dmenu: vim sessions
-  -- Use this to launch programs without a key binding.
   , ((modMask, xK_s),
-     spawn myVimSessions)
+     spawn myClipboard)
+
+  -- dmenu: tokens
+  , ((modMask, xK_a),
+     spawn myTokens)
 
   -- Spawn the file explorer
   , ((modMask, xK_e),
      spawn myFileExplorer)
 
   -- Take a selective screenshot using the command specified by mySelectScreenshot.
-  , ((controlMask, xK_Print),
+  , ((0, xK_Print),
      spawn mySelectScreenshot)
 
   -- Take a full screenshot using the command specified by myScreenshot.
-  , ((0, xK_Print),
+  , ((controlMask, xK_Print),
      spawn myScreenshot)
 
   -- Toggle current focus window to fullscreen
@@ -277,7 +286,7 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
 
   -- Lock
   , ((modMask, xK_l),
-     spawn "betterlockscreen -l")
+     spawn "xtrlock-pam -b bg")
 
   --------------------------------------------------------------------
   -- "Standard" xmonad key bindings
