@@ -9,14 +9,15 @@ let
   # Applications
     firefox
     wezterm
-    tdesktop             # telegram messaging client
+    tdesktop                    # telegram messaging client
     transmission-gtk
-    vlc                  # media player
+    vlc                         # media player
     simplescreenrecorder
-    arandr               # simple GUI for xrandr
-    asciinema            # record the terminal
-    insomnia             # rest client with graphql support
-    # feh
+    arandr                      # simple GUI for xrandr
+    asciinema                   # record the terminal
+    insomnia                    # rest client with graphql support
+    postman                     # rest client
+    feh
     # pcmanfm
     simplescreenrecorder
     lxappearance
@@ -24,114 +25,142 @@ let
     gnome.file-roller
     # mate.engrampa
     neuron-notes
+    ranger
+    zoom-us
+    discord
+    inkscape
 
   # Utility
-    fd                   # "find" for files
+    fd                          # "find" for files
     silver-searcher
-    ripgrep              # fast grep
-    # gnomecast            # chromecast local files
-    killall              # kill processes by name
-    libnotify            # notify-send command
-    betterlockscreen
-    ncdu                 # disk space info (a better du)
-    neofetch             # command-line system information
-    scrot
-    nyancat              # the famous rainbow cat!
-    pavucontrol          # pulseaudio volume control
-    paprefs              # pulseaudio preferences
-    pasystray            # pulseaudio systray
-    pulsemixer           # pulseaudio mixer
-    tldr                 # summary of a man page
-    tree                 # display files in a tree view
+    ripgrep                     # fast grep
+    # gnomecast                   # chromecast local files
+    killall                     # kill processes by name
+    libnotify                   # notify-send command
+    # betterlockscreen
+    xtrlock-pam                 # PAM based X11 screen locker
+    ncdu                        # disk space info (a better du)
+    neofetch                    # command-line system information
+    scrot                       # screenshot tool
     maim                        # screenshot tool
+    nyancat                     # the famous rainbow cat!
+    pavucontrol                 # pulseaudio volume control
+    paprefs                     # pulseaudio preferences
+    pasystray                   # pulseaudio systray
+    pulsemixer                  # pulseaudio mixer
+    tldr                        # summary of a man page
+    tree                        # display files in a tree view
     unzip
     wget
-    xclip                # clipboard support (also for neovim)
+    xclip                       # clipboard support (also for neovim)
+    haskellPackages.greenclip   # clipboard manager to be integrated with rofi
     nmap
     vulkan-tools
-    recoll
     yt-dlp
-    docker-compose       # docker manager
+    docker-compose              # docker manager
+    ps_mem                      # accurately report the in core memory usage for a program
+    jq
+    fzy                         # a better fuzzy finder
+    rlwrap
+    powertop                    # power comsumption
+    ryzenadj                    # adjust power management settings
 
   # TEMP
-  # needed for course homework
+  # programming languages course homework
   # https://www.coursera.org/learn/programming-languages
-    ruby_2_6
+  # ---
+  # 7 languages in 7 weeks book
+    # ruby_2_6
+    ruby
     rubyPackages.solargraph
+    io
 
   # Nix
-    any-nix-shell        # fish support for nix shell
-    cachix               # nix caching
-    nix-doc              # nix documentation search tool
-    nix-index            # files database for nixpkgs
-    rnix-lsp             # nix lsp server
+    any-nix-shell               # fish support for nix shell
+    cachix                      # nix caching
+    nix-doc                     # nix documentation search tool
+    nix-index                   # files database for nixpkgs
+    rnix-lsp                    # nix lsp
+    # nix-tree                    # visualize nix dependencies
 
   # Dev
+    gnumake
     gcc
     openssl
     pkgconfig
     tree-sitter
-    racket
+    python3
     rustup
-    fennel               # Fennel lang (for neovim config)
-    janet
-    clojure-lsp
+    pgweb                       # PostgreSQL client
+    elixir
+    elixir_ls
+
+  # node:
     nodejs
     yarn
-    nodePackages.typescript
-    nodePackages.typescript-language-server
+    # nodePackages.typescript                 # NOTE: v4.4.4 installed globally for now.
+    # nodePackages.typescript-language-server # NOTE: v0.8.1 installed globally for now
     nodePackages.prettier
-    deno
-    haskellPackages.haskell-language-server
-    pgweb                # PostgreSQL client
+    deno                        # deno lsp; used as prettier alternative
 
-    # other haskell packages:
-    # brittany             # code formatter
-    # cabal2nix            # convert cabal projects to nix
-    # cabal-install        # package manager
-    # ghc                  # compiler
-    # hoogle               # documentation
-    # nix-tree             # visualize nix dependencies
+  # lisp:
+    racket
+    fennel                      # fennel lang (for neovim config)
+    janet
+    clojure-lsp
+    babashka
+
+  # haskell:
+    ghc                         # compiler
+    cabal-install               # package manager
+    haskellPackages.haskell-language-server
+    cabal2nix                   # convert cabal projects to nix
+    # brittany                    # code formatter
+    # hoogle                      # documentation
 
   # Misc
     gnome3.adwaita-icon-theme
-    # audacious            # simple music player
-    # bitwarden-cli        # command-line client for the password manager
-    # bottom               # alternative to htop & ytop
-    # calibre              # e-book reader
-    # dconf2nix            # dconf (gnome) files to nix converter
-    # discord              # chat client for dev stuff
-    # dmenu                # application launcher
-    # dive                 # explore docker layers
-    # duf                  # disk usage/free utility
-    # element-desktop      # a feature-rich client for Matrix.org
-    # exa                  # a better `ls`
-    # gimp                 # gnu image manipulation program
-    # hyperfine            # command-line benchmarking tool
-    # libreoffice          # office suite
-    # ngrok-2              # secure tunneling to localhost
-    # nixos-generators     # nix tool to generate isos
-    # manix                # documentation searcher for nix
-    # pgcli                # modern postgres client
-    # playerctl            # music player controller
-    # prettyping           # a nicer ping
-    # slack                # messaging client
-    # spotify              # music source
-    # terminator           # great terminal multiplexer
-    # tex2nix              # texlive expressions for documents
-    # yad                  # yet another dialog - fork of zenity
+    qmk-udev-rules              # for QMK flashing
+    # audacious                 # simple music player
+    # bitwarden-cli             # command-line client for the password manager
+    # bottom                    # alternative to htop & ytop
+    # calibre                   # e-book reader
+    # dconf2nix                 # dconf (gnome) files to nix converter
+    # discord                   # chat client for dev stuff
+    # dmenu                     # application launcher
+    # dive                      # explore docker layers
+    # duf                       # disk usage/free utility
+    # element-desktop           # a feature-rich client for Matrix.org
+    # exa                       # a better `ls`
+    # gimp                      # gnu image manipulation program
+    # hyperfine                 # command-line benchmarking tool
+    # libreoffice               # office suite
+    # ngrok-2                   # secure tunneling to localhost
+    # nixos-generators          # nix tool to generate isos
+    # manix                     # documentation searcher for nix
+    # pgcli                     # modern postgres client
+    # playerctl                 # music player controller
+    # prettyping                # a nicer ping
+    # slack                     # messaging client
+    # spotify                   # music source
+    # terminator                # great terminal multiplexer
+    # tex2nix                   # texlive expressions for documents
+    # yad                       # yet another dialog - fork of zenity
 
     # fixes the `ar` error required by cabal
     # binutils-unwrapped
   ];
 
   xfcePkgs = with pkgs.xfce; [
-    thunar
+    (thunar.override {
+      thunarPlugins = [
+        thunar-archive-plugin
+        thunar-media-tags-plugin
+      ];
+    })
     thunar-volman
-    thunar-archive-plugin
-    thunar-media-tags-plugin
     mousepad
-    ristretto
+    # ristretto
     xfce4-taskmanager
   ];
 
@@ -151,8 +180,14 @@ let
     xorg.xev
   ];
 
+  overrides = with pkgs; [
+    # WARNING: SECRET
+    (polymc.override { msaClientID = "00000000-0000-0000-0000-000000000000"; })
+  ];
+
   scripts = [
-    (import ./config/scripts/remaps.nix)
+    (pkgs.callPackage ./config/scripts/remaps.nix {})
+    (pkgs.callPackage ./config/scripts/tokens.nix {})
   ];
 
 in
@@ -173,7 +208,7 @@ in
   home = {
     username = "kotokrad";
     homeDirectory = "/home/kotokrad";
-    packages = defaultPkgs ++ xfcePkgs ++ fontPkgs ++ xmonadPkgs;
+    packages = defaultPkgs ++ xfcePkgs ++ fontPkgs ++ xmonadPkgs ++ scripts ++ overrides;
   };
 
   programs = {
@@ -192,10 +227,15 @@ in
     zsh.defaultKeymap = "viins";
     zsh.shellAliases = {
       gs = "git status";
+      gh = "git hist";
       ww = "vim -c VimwikiIndex";
+      # janet repl
       jr = ''janet -e "(import spork/netrepl) (netrepl/server)"'';
+      lofi = "mpv --no-video --volume=50 https://youtu.be/5qap5aO4i9A";
       # dump keystrokes https://web.archive.org/web/20191220190018/https://www.drbunsen.org/vim-croquet/
       vim = ''nvim -w ~/.vimlog "$@"'';
+      ssh = ''TERM=xterm-256color ssh'';
+      mkdir = "mkdir -p";
     };
 
     git.enable = true;
@@ -230,6 +270,7 @@ in
     bat.config.theme = "gruvbox-dark";
 
     lazygit.enable = true;
+    ncmpcpp.enable = true;
   };
 
   fonts.fontconfig.enable = true;
@@ -251,10 +292,7 @@ in
   services.udiskie.enable = true;
   services.unclutter.enable = true;
 
-
   xdg.configFile."wezterm/".source = ./config/wezterm;
-  home.file.".local/bin".source = ./config/scripts;
-  # home.file.".icons/default".source = "${pkgs.vanilla-dmz}/share/icons/Vanilla-DMZ";
 
 
   # This value determines the Home Manager release that your

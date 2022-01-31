@@ -34,12 +34,12 @@
       options = [ "loop" ];
     };
 
-  powerManagement = {
-    enable = true;
-    resumeCommands = ''
-      betterlockscreen -l
-    '';
-  };
+#   powerManagement = {
+#     enable = true;
+#     resumeCommands = ''
+#       betterlockscreen -l
+#     '';
+#   };
 
   nixpkgs.config.allowUnfree = true;
 
@@ -57,7 +57,7 @@
   };
 
   environment.variables = {
-    EDITOR = "vim";
+    EDITOR = "nvim";
 
     # HiDPI
     GDK_SCALE = "2";
@@ -83,7 +83,13 @@
     upower.enable = true;
     blueman.enable = true;
     redshift.enable = true;
-    illum.enable = true; # brightness buttons
+    illum.enable = true;                 # brightness buttons
+    greenclip.enable = true;             # clipboard manager to be integrated with rofi
+    gvfs.enable = true;
+    tumbler.enable = true;
+
+    mpd.enable = true;
+    mpd.musicDirectory = "/home/kotokrad/music";
 
     logind.extraConfig = ''
       # don’t shutdown when power button is short-pressed
@@ -92,6 +98,17 @@
 
     dbus.enable = true;
 
+
+    tlp = {
+      # advanced power management
+      enable = true;
+      settings = {
+        # Do not suspend USB devices
+        # USB_AUTOSUSPEND = 0;
+        RADEON_DPM_PERF_LEVEL_ON_BAT = "low";
+      };
+    };
+
     xserver = {
       enable = true;
       dpi = 180;
@@ -99,11 +116,9 @@
       layout = "us,ru";
       xkbOptions = "caps:escape,grp:alt_shift_toggle";
 
-      libinput = {
-        enable = true;
-        touchpad.disableWhileTyping = true;
-      };
+      libinput.enable = true;
 
+      updateDbusEnvironment = true;
 
       displayManager.lightdm.enable = true;
       displayManager.defaultSession = "none+myxmonad";
@@ -136,6 +151,7 @@
     postgresql = {
       enable = true;
       package = pkgs.postgresql_14;
+      extraPlugins = with pkgs.postgresql_14.pkgs; [ postgis ];
       enableTCPIP = false;
       identMap = ''
         postgres kotokrad postgres
@@ -176,7 +192,25 @@
     font-awesome-ttf
     material-design-icons
     (nerdfonts.override { fonts = [ "FiraCode" "JetBrainsMono" "FantasqueSansMono" ]; })
+    # japanese fonts:
+    ipafont
+    kochi-substitute
   ];
+
+  fonts.fontconfig.defaultFonts = {
+    monospace = [
+      "DejaVu Sans Mono"
+      "IPAGothic"
+    ];
+    sansSerif = [
+      "DejaVu Sans"
+      "IPAPGothic"
+    ];
+    serif = [
+      "DejaVu Serif"
+      "IPAPMincho"
+    ];
+  };
 
   # Users
   users.users.kotokrad = {
@@ -188,6 +222,7 @@
       "audio"
       "docker"
       "adbusers"
+      "lp"
     ];
     shell = pkgs.zsh;
   };
@@ -203,8 +238,9 @@
   programs.zsh.enable = true;
   programs.ssh.startAgent = true;
   programs.dconf.enable = true;
-  # programs.steam.enable = true;
+  programs.steam.enable = true;
   programs.adb.enable = true;
+  programs.thefuck.enable = true;
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
