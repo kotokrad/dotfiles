@@ -30,6 +30,9 @@
         demuxer-readahead-secs = 600;
         hls-bitrate = "min";
       };
+      "1080p" = {
+        ytdl-format = "bestvideo[height<=?1080]+bestaudio/best";
+      };
     };
 
     config = {
@@ -52,6 +55,7 @@
 
       term-status-msg = "Time: \${time-pos}";
       osd-font-size = 16;
+      script-opts-append = "ytdl_hook-ytdl_path=yt-dlp"; # using yt-dlp instead of youtube-dl
     };
   };
 
