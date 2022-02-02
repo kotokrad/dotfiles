@@ -1,14 +1,13 @@
-name:           kotokrad-xmonad
+name:           xmonad-config
 version:        0.1.0
-synopsis:       Based on Icy-Thought's Xmonad configuration.
 author:         kotokrad
 maintainer:     kotokrad
 build-type:     Simple
 cabal-version:  >=1.10
 
-executable kotokrad-xmonad
-  main-is:             xmonad.hs
-  build-depends:       aeson>=0.11.2.1
+executable xmonad-config
+  main-is:           xmonad.hs
+  build-depends:     aeson>=0.11.2.1
                      , X11>=1.8
                      , base >=4.7
                      , bytestring>=0.10.8.1

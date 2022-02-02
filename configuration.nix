@@ -68,7 +68,6 @@
 
   environment.systemPackages = with pkgs; [
     haskellPackages.xmobar
-    haskellPackages.kotokrad-xmonad
     coreutils
     wget
     git
@@ -121,17 +120,6 @@
       updateDbusEnvironment = true;
 
       displayManager.lightdm.enable = true;
-      displayManager.defaultSession = "none+myxmonad";
-
-      windowManager = {
-        session = [{
-          name = "myxmonad";
-          start = ''
-            /usr/bin/env kotokrad-xmonad &
-            waitPID=$!
-          '';
-        }];
-      };
 
       # xset r rate 250 55
       # 18 = 55

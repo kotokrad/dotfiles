@@ -64,6 +64,7 @@ let
     rlwrap
     powertop                    # power comsumption
     ryzenadj                    # adjust power management settings
+    xdotool
 
   # TEMP
   # programming languages course homework
@@ -195,6 +196,7 @@ in
 
   programs.home-manager.enable = true;
 
+  nixpkgs.config.allowUnfree = true;
   imports = [
     ./config/dunst
     ./config/picom

@@ -1,4 +1,4 @@
-{ pkgs, ...}:
+{ pkgs, ... }:
 
 # let
 #   startupOpts = ''
@@ -56,15 +56,22 @@
   xdg.configFile."xmonad/padding-icon.sh".source = ./padding-icon.sh;
 
   xsession = {
+    enable = true;
+
+    windowManager.xmonad = {
+      enable = true;
+      config = ./xmonad.hs;
+      extraPackages = haskellPackages: [
+        haskellPackages.xmonad-contrib_0_17_0
+        haskellPackages.xmonad-extras_0_17_0
+      ];
+    };
+
     pointerCursor = {
       package = pkgs.vanilla-dmz;
       name = "Vanilla-DMZ";
       size = 24;
     };
   };
-#  xsession = {
-#    enable = true;
-#    initExtra = startupOpts;
-#  };
 
 }

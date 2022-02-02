@@ -1,7 +1,6 @@
 Config {
          font = "xft:FantasqueSansMono Nerd Font:size=10:bold:antialias=true"
        , additionalFonts = [ "xft:FantasqueSansMono Nerd Font:size=9:bold:antialias=true" ]
-       -- , additionalFonts = [ "xft:FontAwesome 5 Free:size=13", "xft:Material Design Icons:size=13"  ]
        , allDesktops = True
        , bgColor = "#282c34"
        , fgColor = "#bbc2cf"
@@ -11,7 +10,7 @@ Config {
        , borderWidth = 2
        , textOffset = 24
        , textOffsets = [23]
-       , commands = [ Run StdinReader
+       , commands = [ Run UnsafeXMonadLog
 
                     , Run Alsa "default" "Master"
                           [ "-t", "<fc=#98971a><status> <volume>%</fc>"
@@ -25,42 +24,11 @@ Config {
                           , "--mediums", "奔 "
                           , "--highs", "墳 " ]
 
---                     , Run CoreTemp
---                           [ "-t", "<fc=#98971a><fn=1></fn></fc> <core0>°"
---                           , "-L", "30"
---                           , "-H", "75"
---                           , "-l", "lightblue"
---                           , "-n", "#bbc2cf"
---                           , "-h", "#cc241d" ]
---                           50
+                    , Run Cpu [ "--template", "<fc=#cc241d><fn=1> </fn> <total>%</fc>" ] 50
 
-                    , Run Cpu
-                          -- [ "--template", "<fc=#cc241d><fn=1></fn> <total>%</fc>" ]
-                          [ "--template", "<fc=#cc241d><fn=1> </fn> <total>%</fc>" ]
-                          -- , "--Low","3"
-                          -- , "--High","50"
-                          -- , "--low","#bbc2cf"
-                          -- , "--normal","#bbc2cf"
-                          -- , "--high","#cc241d" ]
-                          50
+                    , Run Memory ["-t","<fc=#d79921><fn=1> </fn> <usedratio>%</fc>" ] 50
 
-                    , Run Memory
-                          ["-t","<fc=#d79921><fn=1> </fn> <usedratio>%</fc>" ]
-                          -- ,"-H","80"
-                          -- ,"-L","10"
-                          -- ,"-l","#bbc2cf"
-                          -- ,"-n","#bbc2cf"
-                          -- ,"-h","#cc241d" ]
-                          50
-
-                    , Run DiskU
-                          [("/", "<fc=#458588><fn=1> </fn> <free></fc>")] []
-                          -- [ "-L", "5"
-                          -- , "-m", "1"
-                          -- , "-p", "3"
-                          -- , "--normal", "#bbc2cf"
-                          -- , "--low", "#cc241d" ]
-                          20
+                    , Run DiskU [("/", "<fc=#458588><fn=1> </fn> <free></fc>")] [] 20
 
                     , Run Date "%a %b %_d %I:%M" "date" 300
 
@@ -70,27 +38,29 @@ Config {
 
                     , Run BatteryP       [ "BAT0" ]
                                          [ "--template" , "<fc=#427b58><fn=1>  </fn></fc> <acstatus>"
-                                         , "--Low"      , "10"        -- units: %
-                                         , "--High"     , "80"        -- units: %
+                                         , "--Low"      , "15" -- units: %
+                                         , "--High"     , "50" -- units: %
                                          , "--low"      , "#cc241d"
-                                         , "--normal"   , "#3c3836"
+                                         , "--normal"   , "#b57614"
                                          , "--high"     , "#3c3836"
 
                                          , "--" -- battery specific options
-                                                   -- discharging status
-                                                   , "-o"        , "<left>% (<timeleft>)"
-                                                   -- AC "on" status
-                                                   , "-O"        , "<left>%" -- 50fa7b
-                                                   -- charged status
-                                                   , "-i"        , "<left>%"
-                                                   -- , "-lows"     , "  <left> (<timeleft>)"
-                                                   -- , "-mediums"  , "  <left> (<timeleft>)"
-                                                   -- , "-highs"    , "  ZZ <left> (<timeleft>)"
-                                                   -- , "--off-icon-pattern", "<acstatus>"
+                                         , "-P" -- include a percentage symbol in <left>
+
+                                         -- discharging status
+                                         , "-o"        , "<left> (<timeleft>)"
+                                         -- AC "on" status
+                                         , "-O"        , "<left>"
+                                         -- charged status
+                                         , "-i"        , "<left>"
+                                         -- , "-lows"     , "  <left> (<timeleft>)"
+                                         -- , "-mediums"  , "  <left> (<timeleft>)"
+                                         -- , "-highs"    , "  <left> (<timeleft>)"
+                                         -- , "--off-icon-pattern", "<acstatus>"
                                          ] 50
 
                     ]
        , sepChar = "%"
        , alignSep = "}{"
-       , template = "%StdinReader% }{ %alsa:default:Master%  %cpu%  %memory%  %disku%  %battery% <fc=#7c6f64></fc> %kbd% <fc=#7c6f64></fc> %date% %trayerpad%"
+       , template = "%UnsafeXMonadLog% }{ %alsa:default:Master%  %cpu%  %memory%  %disku%  %battery% <fc=#7c6f64></fc> %kbd% <fc=#7c6f64></fc> %date% %trayerpad%"
        }
