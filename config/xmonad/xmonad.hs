@@ -244,9 +244,17 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
   , ((controlMask, xK_Print),
      spawn myScreenshot)
 
+  -- Open Terminal scratchpad
+  , ((modMask, xK_grave),
+     namedScratchpadAction myScratchpads "terminal")
+
   -- Open Notes scratchpad
   , ((modMask, xK_n),
      namedScratchpadAction myScratchpads "notes")
+
+  -- Open Music scratchpad
+  , ((modMask, xK_m),
+     namedScratchpadAction myScratchpads "music")
 
   -- Mute volume.
   , ((0, xF86XK_AudioMute),
@@ -399,13 +407,24 @@ myStartupHook = do
 -- Scratchpads
 --
 myScratchpads =
-  [ NS "notes"
+  [ NS "terminal"
+       (bottomLinePrompt "wezterm start --class sp-terminal -- zsh")
+       (className =? "sp-terminal")
+       quakeFloat
+  , NS "notes"
        "wezterm start --class sp-notes --cwd ~/notes -- nvim scratchpad.md"
        (className =? "sp-notes")
        centerFloat
+  , NS "music" -- TODO use ncmpcpp?
+       ("wezterm start --class sp-music --cwd ~/music -- " ++ lofi)
+       (className =? "sp-music")
+       centerFloat
   ]
     where
-      centerFloat = customFloating $ W.RationalRect 0.05 0.1 0.9 0.8
+      centerFloat = customFloating $ W.RationalRect (1/6) (1/6) (2/3) (2/3)
+      quakeFloat = customFloating $ W.RationalRect 0 0 1 (1/3)
+      lofi = "mpv --no-video --volume=50 https://youtu.be/5qap5aO4i9A"
+      bottomLinePrompt = ("RUN=\"printf '\\n%.0s' {1..100}\" " ++)
 
 
 ------------------------------------------------------------------------

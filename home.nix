@@ -232,6 +232,7 @@ in
       bindkey '^R' history-incremental-search-backward
       bindkey '^[[7~' beginning-of-line
       bindkey '^[[8~' end-of-line
+      eval "$RUN"
     '';
     zsh.enableSyntaxHighlighting = true;
     zsh.defaultKeymap = "viins";
