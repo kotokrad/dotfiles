@@ -11,7 +11,7 @@ stdenv.mkDerivation {
       xorg.libXft
     ];
     nativeBuildInputs = with pkgs; [
-        pkg-config
+      pkg-config
     ];
     dbus = pkgs.dbus;
 }

@@ -67,6 +67,8 @@
       ];
     };
 
+    initExtra = "${pkgs.nitrogen}/bin/nitrogen --restore &";
+
     pointerCursor = {
       package = pkgs.vanilla-dmz;
       name = "Vanilla-DMZ";

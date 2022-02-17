@@ -211,6 +211,11 @@ in
     username = "kotokrad";
     homeDirectory = "/home/kotokrad";
     packages = defaultPkgs ++ xfcePkgs ++ fontPkgs ++ xmonadPkgs ++ scripts ++ overrides;
+    keyboard.layout = "en,ru";
+    keyboard.options = [
+      "caps:escape"
+      "grp:alt_shift_toggle"
+    ];
   };
 
   programs = {
@@ -293,6 +298,26 @@ in
   services.network-manager-applet.enable = true;
   services.udiskie.enable = true;
   services.unclutter.enable = true;
+  services.xidlehook = {
+    enable = true;
+    not-when-audio = true;
+    not-when-fullscreen = true;
+    timers = [
+      # {
+      #   delay = 20;
+      #   command = "xrandr --output \"$(xrandr | awk '/ primary/{print $1}')\" --brightness .1";
+      #   canceller = "xrandr --output \"$(xrandr | awk '/ primary/{print $1}')\" --brightness 1";
+      # }
+      {
+        delay = 120;
+        command = "${pkgs.xtrlock-pam}/bin/xtrlock-pam";
+      }
+      {
+        delay = 300;
+        command = "systemctl suspend";
+      }
+    ];
+  };
 
   xdg.configFile."wezterm/".source = ./config/wezterm;
 

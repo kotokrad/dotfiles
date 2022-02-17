@@ -53,7 +53,7 @@
   time.timeZone = "Asia/Bangkok";
   i18n.defaultLocale = "en_US.UTF-8";
   console = {
-    keyMap = "us";
+    useXkbConfig = true;
   };
 
   environment.variables = {
@@ -67,10 +67,10 @@
   };
 
   environment.systemPackages = with pkgs; [
-    haskellPackages.xmobar
     coreutils
     wget
     git
+    xtrlock-pam
   ];
 
   location.provider = "manual";
@@ -95,8 +95,15 @@
       HandlePowerKey=ignore
     '';
 
-    dbus.enable = true;
+    udev.extraRules = ''
+      # Disable wakeup signals to avoid resume getting triggered
+      # some time after suspend. Reboot required for this to take effect.
+      SUBSYSTEM=="pci", KERNEL=="0000:00:08.1", ATTR{power/wakeup}="disabled"
+      SUBSYSTEM=="pci", KERNEL=="0000:03:00.3", ATTR{power/wakeup}="disabled"
+      SUBSYSTEM=="pci", KERNEL=="0000:03:00.4", ATTR{power/wakeup}="disabled"
+    '';
 
+    dbus.enable = true;
 
     tlp = {
       # advanced power management
@@ -111,15 +118,22 @@
     xserver = {
       enable = true;
       dpi = 180;
-
       layout = "us,ru";
       xkbOptions = "caps:escape,grp:alt_shift_toggle";
-
       libinput.enable = true;
-
       updateDbusEnvironment = true;
 
       displayManager.lightdm.enable = true;
+      displayManager.autoLogin.enable = true;
+      displayManager.autoLogin.user = "kotokrad";
+      displayManager.defaultSession = "none+fake";
+      displayManager.session =
+        let fakeSession = {
+          manage = "window";
+          name = "fake";
+          start = "";
+        };
+        in [ fakeSession ];
 
       # xset r rate 250 55
       # 18 = 55
@@ -229,6 +243,9 @@
   programs.steam.enable = true;
   programs.adb.enable = true;
   programs.thefuck.enable = true;
+  programs.xss-lock.enable = true;
+  programs.xss-lock.lockerCommand = "${pkgs.xtrlock-pam}/bin/xtrlock-pam";
+
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions

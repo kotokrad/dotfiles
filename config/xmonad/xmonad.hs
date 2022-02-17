@@ -82,7 +82,7 @@ myTokens = "tokens"
 
 myFileExplorer = "thunar"
 
-myScreenLock = "xtrlock-pam -b bg"
+myScreenLock = "sleep 0.2 && xtrlock-pam"
 
 ------------------------------------------------------------------------
 -- Workspaces
