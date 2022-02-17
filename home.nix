@@ -29,6 +29,8 @@ let
     zoom-us
     discord
     inkscape
+    slack
+    libreoffice-fresh
 
   # Utility
     fd                          # "find" for files
@@ -197,6 +199,7 @@ in
   programs.home-manager.enable = true;
 
   nixpkgs.config.allowUnfree = true;
+
   imports = [
     ./config/dunst
     ./config/picom
