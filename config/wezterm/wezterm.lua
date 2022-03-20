@@ -26,5 +26,7 @@ return {
       { key="=", mods="CTRL", action="IncreaseFontSize" },
       { key="-", mods="CTRL", action="DecreaseFontSize" },
     },
+    check_for_updates = false,
+    show_update_window = false,
     term = "wezterm"
 }
