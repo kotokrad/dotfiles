@@ -90,7 +90,7 @@ let
 
   # MISC
     neorg
-    neuron-nvim                      # Also notes (testing)
+    # neuron-nvim                      # Also notes (testing)
     vimwiki                          # Notes
 
     # TODO check out

@@ -13,7 +13,6 @@
 (require :dotfiles.plugins.lualine)
 (require :dotfiles.plugins.luasnip)
 (require :dotfiles.plugins.neoscroll)
-(require :dotfiles.plugins.neuron)
 (require :dotfiles.plugins.numb)
 (require :dotfiles.plugins.nvim-cmp)
 (require :dotfiles.plugins.nvim-tree)
@@ -23,6 +22,7 @@
 (require :dotfiles.plugins.trouble)
 (require :dotfiles.plugins.which-key)
 ; (require :dotfiles.plugins.neorg)
+; (require :dotfiles.plugins.neuron)
 
 ;; Non-lua plugin options
 (require :dotfiles.plugins.misc)

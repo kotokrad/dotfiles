@@ -8,6 +8,7 @@ let
   defaultPkgs = with pkgs; [
   # Applications
     firefox
+    ungoogled-chromium
     wezterm
     tdesktop                    # telegram messaging client
     transmission-gtk
@@ -24,13 +25,14 @@ let
     mate.mate-calc
     gnome.file-roller
     # mate.engrampa
-    neuron-notes
+    # neuron-notes
     ranger
     zoom-us
     discord
     inkscape
     slack
     libreoffice-fresh
+    fbreader
 
   # Utility
     fd                          # "find" for files
@@ -67,6 +69,7 @@ let
     powertop                    # power comsumption
     ryzenadj                    # adjust power management settings
     xdotool
+    ffmpeg
 
   # TEMP
   # programming languages course homework
