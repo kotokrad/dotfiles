@@ -111,6 +111,7 @@
       settings = {
         # Do not suspend USB devices
         # USB_AUTOSUSPEND = 0;
+        USB_EXCLUDE_BTUSB = 1;
         RADEON_DPM_PERF_LEVEL_ON_BAT = "low";
       };
     };
