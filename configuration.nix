@@ -192,7 +192,7 @@
   # Fonts
   fonts.fonts = with pkgs; [
     corefonts
-    font-awesome-ttf
+    font-awesome
     material-design-icons
     (nerdfonts.override { fonts = [ "FiraCode" "JetBrainsMono" "FantasqueSansMono" ]; })
     # japanese fonts:

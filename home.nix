@@ -8,7 +8,7 @@ let
   defaultPkgs = with pkgs; [
   # Applications
     firefox
-    ungoogled-chromium
+    chromium
     wezterm
     tdesktop                    # telegram messaging client
     transmission-gtk
@@ -18,7 +18,6 @@ let
     asciinema                   # record the terminal
     insomnia                    # rest client with graphql support
     postman                     # rest client
-    feh
     # pcmanfm
     simplescreenrecorder
     lxappearance
@@ -33,6 +32,7 @@ let
     slack
     libreoffice-fresh
     fbreader
+    imagemagick
 
   # Utility
     fd                          # "find" for files
@@ -128,7 +128,6 @@ let
     gnome3.adwaita-icon-theme
     qmk-udev-rules              # for QMK flashing
     # audacious                 # simple music player
-    # bitwarden-cli             # command-line client for the password manager
     # bottom                    # alternative to htop & ytop
     # calibre                   # e-book reader
     # dconf2nix                 # dconf (gnome) files to nix converter
@@ -171,7 +170,7 @@ let
   ];
 
   fontPkgs = with pkgs; [
-    font-awesome-ttf      # awesome fonts
+    font-awesome          # awesome fonts
     material-design-icons # fonts with glyphs
   ];
 
@@ -285,6 +284,7 @@ in
 
     lazygit.enable = true;
     ncmpcpp.enable = true;
+    feh.enable = true;
   };
 
   fonts.fontconfig.enable = true;
