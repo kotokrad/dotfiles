@@ -409,7 +409,7 @@ myStartupHook = do
 --
 myScratchpads =
   [ NS "terminal"
-       (bottomLinePrompt "wezterm start --class sp-terminal -- zsh")
+       (run [bottomLinePrompt, printMemo] "wezterm start --class sp-terminal -- zsh")
        (className =? "sp-terminal")
        quakeFloat
   , NS "notes"
@@ -424,8 +424,10 @@ myScratchpads =
     where
       centerFloat = customFloating $ W.RationalRect (1/6) (1/6) (2/3) (2/3)
       quakeFloat = customFloating $ W.RationalRect 0 0 1 (1/3)
-      lofi = "mpv --no-video --volume=50 https://youtu.be/5qap5aO4i9A"
-      bottomLinePrompt = ("RUN=\"printf '\\n%.0s' {1..100}\" " ++)
+      lofi = "mpv --no-video --volume=70 https://youtu.be/5qap5aO4i9A"
+      run commands term = "RUN=\"" ++ L.intercalate " && " commands ++ "\" " ++ term
+      bottomLinePrompt = "printf '\\n%.0s' {1..100}"
+      printMemo = "bat -p ~/notes/memo.md"
 
 
 ------------------------------------------------------------------------
