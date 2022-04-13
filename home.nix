@@ -224,24 +224,13 @@ in
       "caps:escape"
       "grp:alt_shift_toggle"
     ];
-  };
-
-  programs = {
-    zsh.enable = true;
-    zsh.initExtra = ''
-      export PATH="$PATH":"$HOME/.npm-packages/bin"
-      export JANET_PATH="$HOME/.janet"
-      export KEYTIMEOUT=1
-      any-nix-shell zsh --info-right | source /dev/stdin
-      bindkey -v
-      bindkey '^R' history-incremental-search-backward
-      bindkey '^[[7~' beginning-of-line
-      bindkey '^[[8~' end-of-line
-      eval "$RUN"
-    '';
-    zsh.enableSyntaxHighlighting = true;
-    zsh.defaultKeymap = "viins";
-    zsh.shellAliases = {
+    sessionVariables = {
+      MANPAGER = "sh -c 'col -bx | bat -l man -p'";
+      PATH = ''"$PATH":"$HOME/.npm-packages/bin"'';
+      JANET_PATH = "$HOME/.janet";
+      KEYTIMEOUT = 1;
+    };
+    shellAliases = {
       gs = "git status";
       gh = "git hist";
       ww = "vim -c VimwikiIndex";
@@ -253,6 +242,20 @@ in
       ssh = ''TERM=xterm-256color ssh'';
       mkdir = "mkdir -p";
     };
+  };
+
+  programs = {
+    zsh.enable = true;
+    zsh.initExtra = ''
+      any-nix-shell zsh --info-right | source /dev/stdin
+      bindkey -v
+      bindkey '^R' history-incremental-search-backward
+      bindkey '^[[7~' beginning-of-line
+      bindkey '^[[8~' end-of-line
+      eval "$RUN"
+    '';
+    zsh.enableSyntaxHighlighting = true;
+    zsh.defaultKeymap = "viins";
 
     git.enable = true;
     git.aliases = {
@@ -263,7 +266,7 @@ in
       enable = true;
       enableZshIntegration = false;
       defaultCommand = ''
-      ag --follow -g \"\"
+        ag --follow -g \"\"
       '';
     };
 
@@ -330,7 +333,29 @@ in
   };
 
   xdg.configFile."wezterm/".source = ./config/wezterm;
+  xdg.userDirs = {
+    enable = true;
+    desktop     = "$HOME/desktop";
+    documents   = "$HOME/documents";
+    pictures    = "$HOME/pictures";
+    music       = "$HOME/music";
+    videos      = "$HOME/video";
+    download    = "$HOME/downloads";
+    publicShare = "$HOME/public";
+  };
 
+  xdg.mimeApps = {
+    enable = true;
+    defaultApplications = {
+      "text/plain" = "org.xfce.mousepad.desktop";
+      "image/jpeg" = "feh.desktop";
+      "image/png" = "feh.desktop";
+      "image/svg+xml" = ["org.inkscape.Inkscape.desktop" "org.qutebrowser.qutebrowser.desktop"];
+      "x-scheme-handler/tg" = "telegramdesktop.desktop";
+      "x-scheme-handler/magnet" = "transmission-gtk.desktop";
+      "x-scheme-handler/postman" = "postman.desktop";
+    };
+  };
 
   # This value determines the Home Manager release that your
   # configuration is compatible with. This helps avoid breakage
