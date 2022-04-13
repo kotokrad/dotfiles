@@ -1,0 +1,44 @@
+/* Tabs
+** ====================================== */
+
+/* Hide tab bar */
+#TabsToolbar {
+  visibility: collapse;
+}
+
+/* Hide sidebar header */
+#sidebar-box:not([sidebarcommand="viewBookmarksSidebar"]):not([sidebarcommand="viewHistorySidebar"]):not([sidebarcommand="viewTabsSidebar"])
+  #sidebar-header {
+  visibility: collapse;
+}
+
+/* Remove items from context menu
+** ====================================== */
+
+/* Bookmark Link */
+#context-bookmarklink,
+
+/* Print Selection */
+#context-print-selection,
+
+/* View Selection Source */
+#context-viewpartialsource-selection,
+
+/* Email Image */
+#context-sendimage,
+
+/* Set Image as Desktop Background (and preceding separator) */
+#context-sep-setbackground, #context-setDesktopBackground,
+
+/* Inspect Accessibility Properties */
+#context-inspect-a11y {
+  display: none !important;
+}
+
+/* Search bar
+** ====================================== */
+
+/* Hide the One-Offs Search Icon Bar */
+#urlbar .search-one-offs:not([hidden]) {
+  display: none !important;
+}

@@ -114,13 +114,11 @@ myWorkspaces = [myWs1Web, myWs2Console, myWs3Code, myWs4FS, myWs5Chat, myWs6Misc
 --
 myWindowRules = composeAll
     [
-      className =? "Firefox"                      --> viewShift myWs1Web
-    , className =? "Chromium-browser"             --> viewShift myWs1Web
+      className =? "firefox"                      --> viewShift myWs1Web
+    , className =? "librewolf"                    --> viewShift myWs1Web
     , className =? "qutebrowser"                  --> viewShift myWs1Web
-    , className =? "kitty"                        --> viewShift myWs2Console
     , className =? "org.wezfurlong.wezterm"       --> viewShift myWs2Console
     , className =? ".thunar-wrapped_"             --> viewShift myWs4FS
-    , className =? "Thunar"                       --> viewShift myWs4FS
     , className =? "Transmission-gtk"             --> viewShift myWs4FS
     , className =? "Steam"                        --> viewShift myWs4FS
     , className =? "TelegramDesktop"              --> viewShift myWs5Chat
@@ -132,7 +130,6 @@ myWindowRules = composeAll
     , className =? "trayer"                       --> doIgnore
     , resource  =? "desktop_window"               --> doIgnore
     , isFullscreen                                --> (doF W.focusDown <+> doFullFloat)
-    -- , isFullscreen                             --> doFullFloat
     ]
   where
     viewShift :: WorkspaceId -> ManageHook

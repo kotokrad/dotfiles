@@ -2,12 +2,8 @@
 
 
 let
-  # workaround to open a URL in a new tab in the specific firefox profile
-  # work-browser = pkgs.callPackage ./programs/browsers/work.nix {};
-
   defaultPkgs = with pkgs; [
   # Applications
-    firefox
     chromium
     wezterm
     tdesktop                    # telegram messaging client
@@ -72,6 +68,7 @@ let
     ryzenadj                    # adjust power management settings
     xdotool
     ffmpeg
+    xcolor                      # color picker
 
   # TEMP
   # programming languages course homework
@@ -206,6 +203,7 @@ in
   nixpkgs.config.allowUnfree = true;
 
   imports = [
+    ./config/firefox
     ./config/dunst
     ./config/picom
     ./config/rofi
