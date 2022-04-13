@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ pkgs, ... }:
 
 {
   services.dunst = {
@@ -21,7 +21,9 @@
         line_height = 4;
         format = ''<b>%s</b>\n%b'';
         dmenu = "${pkgs.rofi}/bin/rofi -dmenu";
-        mouse_right_click = "context";
+        mouse_left_click = "close_current";
+        mouse_right_click = "do_action";
+        mouse_middle_click = "context";
       };
     };
   };
