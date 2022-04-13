@@ -191,8 +191,9 @@ let
   ];
 
   scripts = [
-    (pkgs.callPackage ./config/scripts/remaps.nix {})
-    (pkgs.callPackage ./config/scripts/tokens.nix {})
+    (pkgs.callPackage ./config/scripts/switch.nix { })
+    (pkgs.callPackage ./config/scripts/remaps.nix { })
+    (pkgs.callPackage ./config/scripts/tokens.nix { })
   ];
 
 in
