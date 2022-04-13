@@ -33,6 +33,8 @@ let
     libreoffice-fresh
     fbreader
     imagemagick
+    wireshark
+    opensnitch-ui
 
   # Utility
     fd                          # "find" for files

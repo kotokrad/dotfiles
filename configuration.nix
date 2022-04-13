@@ -28,11 +28,11 @@
   # chattr +C docker-volume.img
   # fallocate -l 20G docker-volume.img
   # mkfs.ext4 docker-volume.img
-  fileSystems."/var/lib/docker" =
-    { device = "/media/docker-volume.img";
-      fsType = "ext4";
-      options = [ "loop" ];
-    };
+  fileSystems."/var/lib/docker" = {
+    device = "/media/docker-volume.img";
+    fsType = "ext4";
+    options = [ "loop" ];
+  };
 
 #   powerManagement = {
 #     enable = true;
@@ -86,6 +86,9 @@
     greenclip.enable = true;             # clipboard manager to be integrated with rofi
     gvfs.enable = true;
     tumbler.enable = true;
+    opensnitch.enable = true;
+    tailscale.enable = true;
+    syncthing.enable = true;
 
     mpd.enable = true;
     mpd.musicDirectory = "/home/kotokrad/music";
@@ -246,6 +249,7 @@
   programs.thefuck.enable = true;
   programs.xss-lock.enable = true;
   programs.xss-lock.lockerCommand = "${pkgs.xtrlock-pam}/bin/xtrlock-pam";
+  programs.wireshark.enable = true;
 
 
   # This value determines the NixOS release from which the default
