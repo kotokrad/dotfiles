@@ -29,32 +29,6 @@
     extraConfig = builtins.readFile ./xmobarrc.hs;
   };
 
-  services.trayer = {
-    enable = true;
-    # settings = {
-    #   edge = "top";
-    #   padding = 6;
-    #   SetDockType = true;
-    #   tint = "0x282c34";
-    # };
-    settings = {
-      edge = "top";
-      align = "right";
-      widthtype = "request";
-      distancefrom = "top";
-      distance = 2;
-      height = 28;
-      alpha = 0;
-      transparent = true;
-      iconspacing = 1;
-      expand = true;
-      tint = "0x282c34";
-    };
-  };
-
-  xdg.configFile."xmonad/xmobarrc.hs".source = ./xmobarrc.hs;
-  xdg.configFile."xmonad/padding-icon.sh".source = ./padding-icon.sh;
-
   xsession = {
     enable = true;
 
@@ -62,18 +36,22 @@
       enable = true;
       config = ./xmonad.hs;
       extraPackages = haskellPackages: [
-        haskellPackages.xmonad-contrib_0_17_0
-        haskellPackages.xmonad-extras_0_17_0
+        haskellPackages.xmonad-contrib
+        haskellPackages.xmonad-extras
+        haskellPackages.xmonad-dbus
       ];
     };
 
     initExtra = "${pkgs.nitrogen}/bin/nitrogen --restore &";
 
-    pointerCursor = {
-      package = pkgs.vanilla-dmz;
-      name = "Vanilla-DMZ";
-      size = 24;
-    };
+  };
+
+  home.pointerCursor = {
+    package = pkgs.vanilla-dmz;
+    name = "Vanilla-DMZ";
+    size = 24;
+    # x11.enable = true;
+    # x11.defaultCursor = "xC_left_ptr";
   };
 
 }

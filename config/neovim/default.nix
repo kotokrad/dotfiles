@@ -61,7 +61,6 @@ let
     formatter-nvim
     gitsigns-nvim
     haskell-vim
-    janet-vim
     lsp-colors-nvim                  # add missing LSP highlight groups for unsupported color schemes
     luasnip
     numb-nvim                        # peek line number
@@ -84,16 +83,12 @@ let
     # nvim-spectre
     # sniprun                          # evaluate code snippets
     # symbols-outline-nvim             # TODO: use `aerial.nvim` instead
-
-  # TEMP
-    vim-better-sml                   # SML plugin; NOTE: only for course
+    todo-comments-nvim               # highlight, list and search todo comments
 
   # MISC
-    neorg
-    # neuron-nvim                      # Also notes (testing)
-    vimwiki                          # Notes
+    vimwiki                          # notes
 
-    # TODO check out
+  # TODO: check out
     # ctrlsf-vim                     # edit file in place after searching with ripgrep
     # dhall-vim                      # Syntax highlighting for Dhall lang
     # fzf-hoogle                     # search hoogle with fzf
@@ -111,6 +106,9 @@ let
     # vim-gtfo                       # go to terminal or file manager
     # vim-mergetool                  # git mergetool for nvim
     # vim-tmux                       # syntax highlighting for tmux conf file and more
+
+  # TEMP
+    # vim-better-sml                   # SML plugin; NOTE: only for course
   ];
 
   # neovim-nightly = pkgs.callPackage ./nightly.nix {};
@@ -128,9 +126,15 @@ in
     withRuby     = false;
   };
 
+  home.packages = [ pkgs.neovim-remote ];
+
   xdg.configFile = {
     "nvim/queries".source = ./queries;
     "nvim/fnl".source = ./fnl;
+    "nvim/fnl".onChange = ''
+      rm -rf /home/kotokrad/.config/nvim/lua
+      ${pkgs.neovim}/bin/nvim --headless -c "lua require('aniseed.env').init()" -c q
+    '';
     # "nvim/ftplugin".source = ./ftplugin;
   };
 }

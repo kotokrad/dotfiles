@@ -59,6 +59,10 @@
     };
   };
 
+  xdg.mimeApps.defaultApplications = {
+    "video/x-matroska" = "mpv.desktop";
+  };
+
   home.packages = [
     # (import ./umpv.nix)
   ];

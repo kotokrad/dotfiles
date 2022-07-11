@@ -4,12 +4,15 @@
              telescope telescope
              actions telescope.actions
              builtin telescope.builtin
-             themes telescope.themes}})
+             themes telescope.themes
+             trouble-telescope trouble.providers.telescope}})
 
 (telescope.setup
   {:defaults {:mappings {:i {:<esc> actions.close
                              :<c-j> actions.move_selection_next
-                             :<c-k> actions.move_selection_previous}}}
+                             :<c-k> actions.move_selection_previous
+                             ; Open results in Trouble
+                             :<c-t> trouble-telescope.open_with_trouble}}}
    :vimgrep_arguments ["rg" "--color=never" "--no-heading"
                        "--with-filename" "--line-number" "--column"
                        "--smart-case" "--hidden" "--follow"

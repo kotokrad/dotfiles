@@ -41,8 +41,9 @@
 
 ;; Easy clipboard access
 (util.noremap :n :+ "\"+")
-(util.noremap :i :<c-p> "<c-r>\"")
 (util.noremap :v :<M-c> "\"+y")
+(util.noremap :i :<M-c> "<nop>")
+(util.noremap :n :<M-c> "<nop>")
 
 ;; Remove last search highlight
 (util.noremap :n :<c-c> "<cmd>let @/ = ''<cr>")
@@ -55,6 +56,9 @@
 (nvim.set_keymap :n :<localleader>b "<Plug>CamelCaseMotion_b" {:silent true})
 (nvim.set_keymap :o :<localleader>b "<Plug>CamelCaseMotion_b" {:silent true})
 (nvim.set_keymap :x :<localleader>b "<Plug>CamelCaseMotion_b" {:silent true})
+
+;; Add semicolon at the line and from input-mode
+(util.noremap :i :<c-s> "<esc>mmA;<esc>`m:delm m<cr>a")
 
 ;; Tabularize
 ; (nvim.set_keymap :n :<leader>t= ":Tabularize /=<cr>" {})

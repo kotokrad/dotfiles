@@ -71,6 +71,7 @@
     wget
     git
     xtrlock-pam
+    ntfs3g
   ];
 
   location.provider = "manual";
@@ -88,7 +89,12 @@
     tumbler.enable = true;
     opensnitch.enable = true;
     tailscale.enable = true;
-    syncthing.enable = true;
+
+    syncthing = {
+      enable = true;
+      dataDir = "/home/kotokrad";
+      user = "kotokrad";
+    };
 
     mpd.enable = true;
     mpd.musicDirectory = "/home/kotokrad/music";
@@ -107,17 +113,22 @@
     '';
 
     dbus.enable = true;
+    dbus.packages = with pkgs; [
+      gcr
+      dconf
+      xfce.xfconf
+    ];
 
-    tlp = {
-      # advanced power management
-      enable = true;
-      settings = {
-        # Do not suspend USB devices
-        # USB_AUTOSUSPEND = 0;
-        USB_EXCLUDE_BTUSB = 1;
-        RADEON_DPM_PERF_LEVEL_ON_BAT = "low";
-      };
-    };
+    # tlp = {
+    #   # advanced power management
+    #   enable = true;
+    #   settings = {
+    #     # Do not suspend USB devices
+    #     # USB_AUTOSUSPEND = 0;
+    #     USB_EXCLUDE_BTUSB = 1;
+    #     RADEON_DPM_PERF_LEVEL_ON_BAT = "low";
+    #   };
+    # };
 
     xserver = {
       enable = true;
@@ -190,7 +201,7 @@
     extraOptions = ''
       experimental-features = nix-command flakes
     '';
-   };
+  };
 
   # Fonts
   fonts.fonts = with pkgs; [
@@ -222,6 +233,7 @@
   users.users.kotokrad = {
     isNormalUser = true;
     extraGroups = [
+      "dialout"
       "wheel"
       "networkmanager"
       "input"
@@ -229,6 +241,7 @@
       "docker"
       "adbusers"
       "lp"
+      "syncthing"
     ];
     shell = pkgs.zsh;
   };

@@ -6,11 +6,12 @@
 (set nvim.g.nvim_tree_git_hl 1)
 (set nvim.g.nvim_tree_refresh_wait 300)
 
-(tree.setup {:auto_close true
-             :diagnostics {:enable true}
+(tree.setup {:diagnostics {:enable true}
              :update_focused_file {:enable true}
              :view {:width 34
-                    :auto_resize true}})
+                    :mappings {:list [{:key "d" :action "trash"}
+                                      {:key "D" :action "remove"}]}}
+             :actions {:open_file {:resize_window true}}})
 
-
-(util.noremap :n :<c-b> ":NvimTreeToggle<cr>")
+;; Toggle without focusing
+(util.noremap :n :<c-b> ":lua require'nvim-tree'.toggle(false, true)<cr>")

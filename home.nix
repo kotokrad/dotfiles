@@ -12,7 +12,7 @@ let
     simplescreenrecorder
     arandr                      # simple GUI for xrandr
     asciinema                   # record the terminal
-    insomnia                    # rest client with graphql support
+    # insomnia                    # rest client with graphql support
     postman                     # rest client
     # pcmanfm
     simplescreenrecorder
@@ -31,6 +31,7 @@ let
     imagemagick
     wireshark
     opensnitch-ui
+    obsidian
 
   # Utility
     fd                          # "find" for files
@@ -50,12 +51,11 @@ let
     paprefs                     # pulseaudio preferences
     pasystray                   # pulseaudio systray
     pulsemixer                  # pulseaudio mixer
-    tldr                        # summary of a man page
+    tealdeer                    # (tldr) summary of a man page
     tree                        # display files in a tree view
     unzip
     wget
     xclip                       # clipboard support (also for neovim)
-    haskellPackages.greenclip   # clipboard manager to be integrated with rofi
     nmap
     vulkan-tools
     yt-dlp
@@ -69,6 +69,8 @@ let
     xdotool
     ffmpeg
     xcolor                      # color picker
+    lsof
+    trash-cli
 
   # TEMP
   # programming languages course homework
@@ -90,7 +92,8 @@ let
 
   # Dev
     gnumake
-    gcc
+    # gcc
+    binutils-unwrapped          # NOTE: fixes the `ar` error required by cabal
     openssl
     pkgconfig
     tree-sitter
@@ -111,7 +114,7 @@ let
   # lisp:
     racket
     fennel                      # fennel lang (for neovim config)
-    janet
+    # janet
     clojure-lsp
     babashka
 
@@ -150,9 +153,6 @@ let
     # terminator                # great terminal multiplexer
     # tex2nix                   # texlive expressions for documents
     # yad                       # yet another dialog - fork of zenity
-
-    # fixes the `ar` error required by cabal
-    # binutils-unwrapped
   ];
 
   xfcePkgs = with pkgs.xfce; [
@@ -164,8 +164,9 @@ let
     })
     thunar-volman
     mousepad
-    # ristretto
+    ristretto
     xfce4-taskmanager
+    xfconf
   ];
 
   fontPkgs = with pkgs; [
@@ -190,9 +191,8 @@ let
   ];
 
   scripts = [
-    (pkgs.callPackage ./config/scripts/switch.nix { })
     (pkgs.callPackage ./config/scripts/remaps.nix { })
-    (pkgs.callPackage ./config/scripts/tokens.nix { })
+    (pkgs.callPackage ./config/scripts/nixconf.nix { })
   ];
 
 in
@@ -208,9 +208,11 @@ in
     ./config/picom
     ./config/rofi
     ./config/xmonad
+    ./config/polybar
     ./config/neovim
     ./config/qutebrowser
     ./config/mpv
+    ./config/lf
   ];
 
   home = {
@@ -222,18 +224,16 @@ in
       "caps:escape"
       "grp:alt_shift_toggle"
     ];
+    sessionPath = ["$HOME/.npm-packages/bin"];
     sessionVariables = {
       MANPAGER = "sh -c 'col -bx | bat -l man -p'";
-      PATH = ''"$PATH":"$HOME/.npm-packages/bin"'';
-      JANET_PATH = "$HOME/.janet";
       KEYTIMEOUT = 1;
     };
     shellAliases = {
+      switch = "sudo nixos-rebuild switch --flake '/home/kotokrad/nixos-config#'";
       gs = "git status";
       gh = "git hist";
       ww = "vim -c VimwikiIndex";
-      # janet repl
-      jr = ''janet -e "(import spork/netrepl) (netrepl/server)"'';
       lofi = "mpv --no-video --volume=50 https://youtu.be/5qap5aO4i9A";
       # dump keystrokes https://web.archive.org/web/20191220190018/https://www.drbunsen.org/vim-croquet/
       vim = ''nvim -w ~/.vimlog "$@"'';
@@ -300,7 +300,7 @@ in
       package = pkgs.papirus-icon-theme;
     };
     theme = {
-      name = "gruvbox-dark-gtk";
+      name = "gruvbox-dark";
       package = pkgs.gruvbox-dark-gtk;
     };
 
@@ -308,7 +308,10 @@ in
 
   services.network-manager-applet.enable = true;
   services.udiskie.enable = true;
+  services.udiskie.automount = false;
   services.unclutter.enable = true;
+  services.syncthing.enable = true;
+  services.syncthing.tray.enable = true;
   services.xidlehook = {
     enable = true;
     not-when-audio = true;
@@ -346,12 +349,12 @@ in
     enable = true;
     defaultApplications = {
       "text/plain" = "org.xfce.mousepad.desktop";
-      "image/jpeg" = "feh.desktop";
-      "image/png" = "feh.desktop";
+      "image/jpeg" = "org.xfce.ristretto.desktop";
+      "image/png" = "org.xfce.ristretto.desktop";
       "image/svg+xml" = ["org.inkscape.Inkscape.desktop" "org.qutebrowser.qutebrowser.desktop"];
       "x-scheme-handler/tg" = "telegramdesktop.desktop";
       "x-scheme-handler/magnet" = "transmission-gtk.desktop";
-      "x-scheme-handler/postman" = "postman.desktop";
+      "x-scheme-handler/postman" = "Postman.desktop";
     };
   };
 

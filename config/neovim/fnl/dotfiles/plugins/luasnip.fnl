@@ -13,21 +13,31 @@
     {:trig trig :name name}
     body))
 
-(set ls.snippets {:javascript [(snip "Simple console.log"
-                                     :log
-                                     "console.log(${1:value})")
-                               (snip "Debug console.log"
-                                     :clo
-                                     "console.log('${1:value} =>', ${1:value})")
-                               (snip "Debug object with console.dir"
-                                     :dir
-                                     "console.dir(${1:value}, { depth: null })")
-                               (snip "anonymous function"
-                                     :f
-                                     "() => ")
-                               (snip "anonymous function with arguments"
-                                     :fn
-                                     "$1 => $2")]})
+(ls.add_snippets :javascript [(ls.parser.parse_snippet {:trig "lsp"} "$1 is ${2|hard,easy,challenging|}")
+                              (snip "Simple console.log"
+                                    :log
+                                    "console.log(${1:value})")
+                              (snip "Debug console.log"
+                                    :clo
+                                    "console.log('${1:value} =>', ${1:value})")
+                              (snip "Debug object with console.dir"
+                                    :dir
+                                    "console.dir(${1:value}, { depth: null })")
+                              (snip "anonymous function"
+                                    :f
+                                    "() => ")
+                              (snip "anonymous function with arguments"
+                                    :fn
+                                    "($1) => $2")
+                              (snip "anonymous function with body"
+                                    :F
+                                    "($1) => {$2}")
+                              (snip "default export"
+                                    :e
+                                    "export ")
+                              (snip "default export"
+                                    :ed
+                                    "export default ")])
 
 (ls.filetype_extend :typescript [:javascript])
 (ls.filetype_extend :typescriptreact [:javascript])

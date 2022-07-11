@@ -42,6 +42,7 @@ import XMonad.Util.NamedScratchpad
 import XMonad.Util.Cursor
 import XMonad.Util.NamedWindows (getName)
 import XMonad.Util.ClickableWorkspaces
+import XMonad.Util.Paste
 
 import Graphics.X11.ExtraTypes.XF86
 import qualified XMonad.StackSet as W
@@ -53,6 +54,14 @@ import Data.List ((\\))
 import XMonad.Layout.PerWorkspace (onWorkspace)
 import XMonad.Actions.WorkspaceNames (getWorkspaceName)
 
+-- -- Imports for Polybar --
+-- import           XMonad.Hooks.DynamicLog
+-- import qualified Codec.Binary.UTF8.String              as UTF8
+-- import qualified DBus                                  as D
+-- import qualified DBus.Client                           as D
+import XMonad.Hooks.DynamicLog
+import qualified XMonad.DBus as D
+import qualified DBus.Client as DC
 
 ------------------------------------------------------------------------
 myHomeDir = "/home/kotokrad"
@@ -78,7 +87,7 @@ myClipboard = "rofi -modi 'clipboard:greenclip print' -show clipboard -run-comma
 
 myVimSessions = "vim-sessions"
 
-myTokens = "tokens"
+myNixConf = "nixconf"
 
 myFileExplorer = "thunar"
 
@@ -87,15 +96,15 @@ myScreenLock = "sleep 0.2 && xtrlock-pam"
 ------------------------------------------------------------------------
 -- Workspaces
 -- The default number of workspaces (virtual screens) and their names.
---
-myWs1Web = "\62057 "
-myWs2Console = "\61728 "
-myWs3Code = "\61729 "
-myWs4FS = "\61563 "
-myWs5Chat = "\62150 "
-myWs6Misc = "\62532 "
 
-myWorkspaces = [myWs1Web, myWs2Console, myWs3Code, myWs4FS, myWs5Chat, myWs6Misc]
+myWs1Web = "web"
+myWs2Term = "term"
+myWs3Code = "code"
+myWs4Files = "files"
+myWs5Chat = "chat"
+myWs6Misc = "misc"
+
+myWorkspaces = [myWs1Web, myWs2Term, myWs3Code, myWs4Files, myWs5Chat, myWs6Misc]
 
 
 ------------------------------------------------------------------------
@@ -117,17 +126,21 @@ myWindowRules = composeAll
       className =? "firefox"                      --> viewShift myWs1Web
     , className =? "librewolf"                    --> viewShift myWs1Web
     , className =? "qutebrowser"                  --> viewShift myWs1Web
-    , className =? "org.wezfurlong.wezterm"       --> viewShift myWs2Console
-    , className =? ".thunar-wrapped_"             --> viewShift myWs4FS
-    , className =? "Transmission-gtk"             --> viewShift myWs4FS
-    , className =? "Steam"                        --> viewShift myWs4FS
+    , className =? "org.wezfurlong.wezterm"       --> viewShift myWs2Term
+    , className =? ".thunar-wrapped_"             --> viewShift myWs4Files
+    , className =? "Thunar"                       --> viewShift myWs4Files
+    , className =? "Transmission-gtk"             --> viewShift myWs4Files
+    , className =? "Steam"                        --> viewShift myWs4Files
+    , className =? "Chromium-browser"             --> viewShift myWs4Files
     , className =? "TelegramDesktop"              --> viewShift myWs5Chat
     , className =? "Slack"                        --> viewShift myWs5Chat
+    , className =? "Pavucontrol"                  --> viewShift myWs6Misc
     , className =? ".blueman-manager-wrapped"     --> viewShift myWs6Misc
+    , className =? "Postman"                      --> viewShift myWs6Misc
     , className =? "File-roller"                  --> doCenterFloat
     , className =? "Mate-calc"                    --> doCenterFloat
+    , className =? "Nm-applet"                    --> doCenterFloat
     , className =? "feh"                          --> doFullFloat
-    , className =? "trayer"                       --> doIgnore
     , resource  =? "desktop_window"               --> doIgnore
     , isFullscreen                                --> (doF W.focusDown <+> doFullFloat)
     ]
@@ -176,7 +189,8 @@ xmobarActiveTitleColor      = "#b16286"
 xmobarInactiveTitleColor    = "#3c3836"
 xmobarCurrentWorkspaceColor = "#458588"
 xmobarHiddenWorkspaceColor  = "#3c3836"
-xmobarDefaultColor          = "gray"
+xmobarDefaultColor          = "#3c3836"
+-- xmobarDefaultColor          = "gray"
 -- xmobarMutedColor            = "#7c6f64"
 
 xmobarSecondaryFont str = "<fn=1>" ++ str ++ "</fn>"
@@ -222,13 +236,9 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
   , ((modMask, xK_r),
      spawn myRun)
 
-  -- dmenu: clipboard
+  -- dmenu: nix config files
   , ((modMask, xK_s),
-     spawn myClipboard)
-
-  -- dmenu: tokens
-  , ((modMask, xK_a),
-     spawn myTokens)
+     spawn myNixConf)
 
   -- Spawn the file explorer
   , ((modMask, xK_e),
@@ -289,6 +299,22 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
   --------------------------------------------------------------------
   -- "Standard" xmonad key bindings
   --
+
+  -- Copy
+  , ((modMask, xK_c),
+     sendKey controlMask xK_c)
+
+  -- Paste
+  , ((modMask, xK_v),
+     sendKey controlMask xK_v)
+
+  -- Select All
+  , ((modMask, xK_a),
+     sendKey controlMask xK_a)
+
+  -- Undo
+  , ((modMask, xK_z),
+     sendKey controlMask xK_z)
 
   -- Close focused window.
   , ((modMask, xK_q),
@@ -448,22 +474,44 @@ myPP =
 
 mySB = statusBarProp "xmobar" (clickablePP myPP)
 
+------------------------------------------------------------------------
+-- Polybar
+--
+polybarColor :: String -> String -> String -> String
+polybarColor fg bg str = "%{F" ++ fg ++ " B" ++ bg ++ "}" ++ str ++ "%{F- B-}"
+
+polybarHook :: DC.Client -> PP
+polybarHook dbus =
+  def { ppTitle           = polybarColor xmobarActiveTitleColor "" . shorten titleMaxLength
+      , ppSep             = "  "
+      , ppExtras          = [logTitles]
+      , ppOrder           = \(ws:_:t:ts:_) -> t : [polybarColor xmobarInactiveTitleColor "" ts]
+      , ppOutput          = D.send dbus
+      }
+  where
+    titleMaxLength = 24
+    logTitles = withWindowSet $ fmap (Just . unwords) -- fuse window names
+                              . traverse (fmap (shorten titleMaxLength . show) . getName) -- show window names
+                              . (\ws -> W.index ws \\ maybeToList (W.peek ws))
+
+polybarSB dbus = statusBarGeneric "polybar -r" lh
+  where lh = dynamicLogWithPP $ polybarHook dbus
+
 
 ------------------------------------------------------------------------
 
 -- Run xmonad with all the defaults we set up.
 --
+main :: IO ()
 main = do
-  spawn myXmobar
+  dbus <- D.connect
+  D.requestAccess dbus
+  let polybar = withEasySB (polybarSB dbus) defToggleStrutsKey
   xmonad $ docks
          $ ewmhFullscreen
          $ ewmh
-         $ withSB mySB
-         $ defaults {
-             logHook = updatePointer (0.75, 0.75) (0.75, 0.75)
-                       >> refocusLastLogHook
-                       >> nsHideOnFocusLoss myScratchpads
-         }
+         $ polybar
+         $ defaults
 
 
 ------------------------------------------------------------------------
@@ -490,6 +538,11 @@ defaults = def {
 
     -- hooks, layouts
     layoutHook         = myLayout,
-    manageHook         = manageDocks <+> myWindowRules <+> namedScratchpadManageHook myScratchpads,
-    startupHook        = myStartupHook
+    manageHook         = manageDocks
+                     <+> myWindowRules
+                     <+> namedScratchpadManageHook myScratchpads,
+    startupHook        = myStartupHook,
+    logHook            = updatePointer (0.75, 0.75) (0.75, 0.75)
+                      >> refocusLastLogHook
+                      >> nsHideOnFocusLoss myScratchpads
 }

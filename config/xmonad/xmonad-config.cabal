@@ -25,5 +25,7 @@ executable xmonad-config
                      , utf8-string
                      , xmonad-contrib
                      , xmonad
+                     , xmonad-dbus
+                     , dbus
   hs-source-dirs: .
   default-language: Haskell2010

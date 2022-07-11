@@ -36,13 +36,13 @@
             :mapping {:<Tab> (fn [fallback]
                                (if (cmp.visible)
                                    (cmp.select_next_item)
-                                   (luasnip.jumpable 1)
+                                   (and (luasnip.in_snippet) (luasnip.jumpable 1))
                                    (luasnip.jump 1)
                                    (fallback)))
                       :<s-tab> (fn [fallback]
                                  (if (cmp.visible)
                                      (cmp.select_prev_item)
-                                     (luasnip.jumpable -1)
+                                     (and (luasnip.in_snippet) (luasnip.jumpable -1))
                                      (luasnip.jump -1)
                                      (fallback)))
                       :<c-space> (fn []
@@ -55,8 +55,7 @@
                       {:name "luasnip"}
                       {:name "buffer"}
                       {:name "path"}
-                      {:name "conjure"}
-                      {:name "neorg"}]
+                      {:name "conjure"}]
             :formatting {:format (fn [entry item]
                                    (set item.kind (string.format "%s %s" (a.get lspkind-icons item.kind) item.kind))
                                    (set item.menu (a.get {:nvim_lsp "[LSP]"

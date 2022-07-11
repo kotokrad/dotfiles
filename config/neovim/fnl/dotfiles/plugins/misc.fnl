@@ -1,5 +1,9 @@
 (module dotfiles.plugins.misc
-  {autoload {nvim aniseed.nvim}})
+  {autoload {nvim aniseed.nvim
+             todo-comments todo-comments}})
+
+;; todo-comments.nvim
+(todo-comments.setup)
 
 ;; JSX plugin (syntax highlight)
 (set nvim.g.vim_jsx_pretty_highlight_close_tag 1)

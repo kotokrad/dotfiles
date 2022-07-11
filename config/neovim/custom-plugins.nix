@@ -11,27 +11,27 @@
     };
   };
 
-  vim-better-sml = buildVimPlugin {
-    name = "vim-better-sml";
-    src = fetchFromGitHub {
-      owner  = "jez";
-      repo   = "vim-better-sml";
-      rev    = "1f36431";
-      sha256 = "0v5wbbjxz7k3ifpnl5l06zkwp3wfcs52bzwhs9i89f9g1wkkgq74";
-    };
-    nativeBuildInputs = [ pkgs.mlton ];
-  };
+#   vim-better-sml = buildVimPlugin {
+#     name = "vim-better-sml";
+#     src = fetchFromGitHub {
+#       owner  = "jez";
+#       repo   = "vim-better-sml";
+#       rev    = "1f36431";
+#       sha256 = "0v5wbbjxz7k3ifpnl5l06zkwp3wfcs52bzwhs9i89f9g1wkkgq74";
+#     };
+#     nativeBuildInputs = [ pkgs.mlton ];
+#   };
 
-  janet-vim = buildVimPlugin {
-    name = "janet-vim";
-    src = fetchFromGitHub {
-      owner  = "janet-lang";
-      repo   = "janet.vim";
-      rev    = "294538b";
-      sha256 = "sha256:1x81n4sdxza5hx3fg2pnzkj4f1sv87i7spldg8rsqpglx7da4clx";
-    };
-    nativeBuildInputs = [ pkgs.janet ];
-  };
+#   janet-vim = buildVimPlugin {
+#     name = "janet-vim";
+#     src = fetchFromGitHub {
+#       owner  = "janet-lang";
+#       repo   = "janet.vim";
+#       rev    = "294538b";
+#       sha256 = "sha256:1x81n4sdxza5hx3fg2pnzkj4f1sv87i7spldg8rsqpglx7da4clx";
+#     };
+#     nativeBuildInputs = [ pkgs.janet ];
+#   };
 
   parinfer-rust =
   let
