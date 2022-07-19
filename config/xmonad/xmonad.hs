@@ -20,6 +20,7 @@ import XMonad.Hooks.ManageHelpers
 import XMonad.Hooks.SetWMName
 import XMonad.Hooks.EwmhDesktops
 import XMonad.Hooks.RefocusLast
+import XMonad.Hooks.DynamicLog
 
 import XMonad.Layout.Gaps
 import XMonad.Layout.BinarySpacePartition as BSP
@@ -54,30 +55,20 @@ import Data.List ((\\))
 import XMonad.Layout.PerWorkspace (onWorkspace)
 import XMonad.Actions.WorkspaceNames (getWorkspaceName)
 
--- -- Imports for Polybar --
--- import           XMonad.Hooks.DynamicLog
--- import qualified Codec.Binary.UTF8.String              as UTF8
--- import qualified DBus                                  as D
--- import qualified DBus.Client                           as D
-import XMonad.Hooks.DynamicLog
 import qualified XMonad.DBus as D
 import qualified DBus.Client as DC
 
 ------------------------------------------------------------------------
-myHomeDir = "/home/kotokrad"
 
-myConfigDir = myHomeDir ++ "/.config/xmonad"
-
-myXmobar = "xmobar " ++ myConfigDir ++ "/xmobarrc.hs"
-
--- myTerminal = "alacritty"
 myTerminal = "wezterm"
 
 myScreensaver = "dm-tool switch-to-greeter"
 
 mySelectScreenshot = "maim -s -u | xclip -selection clipboard -t image/png -i"
 
-myScreenshot = "maim -u | xclip -selection clipboard -t image/png"
+-- NOTE: big file in the clipboard causes Telegram to crash
+-- myScreenshot = "maim -u | xclip -selection clipboard -t image/png"
+myScreenshot = "maim -d 3 ~/\"$(date +'%Y-%m-%d-%H%M%S')_screenshot.png\" && notify-send Saved"
 
 myDrun = "rofi -show drun -matching fuzzy"
 
@@ -137,6 +128,8 @@ myWindowRules = composeAll
     , className =? "Pavucontrol"                  --> viewShift myWs6Misc
     , className =? ".blueman-manager-wrapped"     --> viewShift myWs6Misc
     , className =? "Postman"                      --> viewShift myWs6Misc
+    , title     =? "Steam - News"                 --> doCenterFloat
+    , title     =? "Friends List"                 --> (doRectFloat $ W.RationalRect 1 1 (1/4) (1/2))
     , className =? "File-roller"                  --> doCenterFloat
     , className =? "Mate-calc"                    --> doCenterFloat
     , className =? "Nm-applet"                    --> doCenterFloat
@@ -177,23 +170,25 @@ layouts = avoidStruts
             delta      = 3/100
 
 
-myLayout = smartBorders
-           $ mkToggle (NOBORDERS ?? FULL ?? EOT)
+myLayout = lessBorders Screen
+           $ mkToggle (single NBFULL)
            layouts
+
+-- myLayout = smartBorders
+--            $ mkToggle (NOBORDERS ?? FULL ?? EOT)
+--            layouts
 
 
 ------------------------------------------------------------------------
 -- Colors and borders
 --
-xmobarActiveTitleColor      = "#b16286"
-xmobarInactiveTitleColor    = "#3c3836"
-xmobarCurrentWorkspaceColor = "#458588"
-xmobarHiddenWorkspaceColor  = "#3c3836"
-xmobarDefaultColor          = "#3c3836"
--- xmobarDefaultColor          = "gray"
--- xmobarMutedColor            = "#7c6f64"
-
-xmobarSecondaryFont str = "<fn=1>" ++ str ++ "</fn>"
+statusbarActiveTitleColor      = "#b16286"
+statusbarInactiveTitleColor    = "#3c3836"
+statusbarCurrentWorkspaceColor = "#458588"
+statusbarHiddenWorkspaceColor  = "#3c3836"
+statusbarDefaultColor          = "#3c3836"
+-- statusbarDefaultColor          = "gray"
+-- statusbarMutedColor            = "#7c6f64"
 
 -- borders
 myBorderWidth         = 1
@@ -237,7 +232,7 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
      spawn myRun)
 
   -- dmenu: nix config files
-  , ((modMask, xK_s),
+  , ((modMask, xK_p),
      spawn myNixConf)
 
   -- Spawn the file explorer
@@ -332,9 +327,17 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
   , ((modMask .|. shiftMask, xK_Tab),
      windows W.focusUp)
 
+  -- Focus next window inside workspace
+  , ((altMask, xK_Tab),
+     windows W.focusDown)
+
+  -- Focus previous window inside workspace
+  , ((altMask .|. shiftMask, xK_Tab),
+     windows W.focusUp)
+
   -- Toggle current focus window to fullscreen
   , ((modMask, xK_f),
-     sendMessage $ Toggle FULL)
+     sendMessage $ Toggle NBFULL)
 
   -- Cycle through the available layout algorithms.
   , ((modMask, xK_space),
@@ -350,7 +353,7 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
 
   -- Move focus to the previous window.
   , ((modMask, xK_k),
-     windows W.focusUp  )
+     windows W.focusUp)
 
   -- Swap the focused window and the master window.
   , ((modMask .|. shiftMask, xK_Return),
@@ -358,11 +361,11 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
 
   -- Swap the focused window with the next window.
   , ((modMask .|. shiftMask, xK_j),
-     windows W.swapDown  )
+     windows W.swapDown)
 
   -- Swap the focused window with the previous window.
   , ((modMask .|. shiftMask, xK_k),
-     windows W.swapUp    )
+     windows W.swapUp)
 
   -- Push window back into tiling.
   , ((modMask, xK_t),
@@ -393,6 +396,14 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
   [((m .|. modMask, k), windows $ f i)
       | (i, k) <- zip (XMonad.workspaces conf) [xK_1 .. xK_6]
       , (f, m) <- [(W.greedyView, 0), (liftM2 (.) W.view W.shift, shiftMask)]]
+
+  ++
+
+  -- mod-{w,e,r} %! Switch to physical/Xinerama screens 1, 2, or 3
+  -- mod-shift-{w,e,r} %! Move client to screen 1, 2, or 3
+  [((m .|. modMask, key), screenWorkspace sc >>= flip whenJust (windows . f))
+      | (key, sc) <- zip [xK_s, xK_d] [0..]
+      , (f, m) <- [(W.view, 0), (W.shift, shiftMask)]]
 
 
 ------------------------------------------------------------------------
@@ -454,27 +465,6 @@ myScratchpads =
 
 
 ------------------------------------------------------------------------
--- Status bar
---
-myPP =
-  filterOutWsPP [scratchpadWorkspaceTag]
-  $ def { ppCurrent         = xmobarColor xmobarCurrentWorkspaceColor ""
-        , ppHidden          = xmobarColor xmobarDefaultColor ""
-        , ppHiddenNoWindows = xmobarColor xmobarHiddenWorkspaceColor ""
-        , ppTitle           = xmobarColor xmobarActiveTitleColor "" . shorten titleMaxLength
-        , ppSep             = "  "
-        , ppExtras          = [logTitles]
-        , ppOrder           = \(ws:_:t:ts:_) -> xmobarSecondaryFont ws : t : [xmobarColor xmobarInactiveTitleColor "" ts]
-        }
-  where
-    titleMaxLength = 40
-    logTitles = withWindowSet $ fmap (Just . unwords) -- fuse window names
-                              . traverse (fmap (shorten titleMaxLength . show) . getName) -- show window names
-                              . (\ws -> W.index ws \\ maybeToList (W.peek ws))
-
-mySB = statusBarProp "xmobar" (clickablePP myPP)
-
-------------------------------------------------------------------------
 -- Polybar
 --
 polybarColor :: String -> String -> String -> String
@@ -482,10 +472,10 @@ polybarColor fg bg str = "%{F" ++ fg ++ " B" ++ bg ++ "}" ++ str ++ "%{F- B-}"
 
 polybarHook :: DC.Client -> PP
 polybarHook dbus =
-  def { ppTitle           = polybarColor xmobarActiveTitleColor "" . shorten titleMaxLength
+  def { ppTitle           = polybarColor statusbarActiveTitleColor "" . shorten titleMaxLength
       , ppSep             = "  "
       , ppExtras          = [logTitles]
-      , ppOrder           = \(ws:_:t:ts:_) -> t : [polybarColor xmobarInactiveTitleColor "" ts]
+      , ppOrder           = \(ws:_:t:ts:_) -> t : [polybarColor statusbarInactiveTitleColor "" ts]
       , ppOutput          = D.send dbus
       }
   where

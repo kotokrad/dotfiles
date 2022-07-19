@@ -9,7 +9,7 @@
       iwSupport = true;
       # githubSupport = true;
     };
-    script = "polybar &";
+    script = "";
     # settings = {
     # };
     # config = ./polybar/config.ini;

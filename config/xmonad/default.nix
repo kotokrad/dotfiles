@@ -24,11 +24,6 @@
     "Xft.font" = "FantasqueSansMono Nerd Font 14";
   };
 
-  programs.xmobar = {
-    enable = true;
-    extraConfig = builtins.readFile ./xmobarrc.hs;
-  };
-
   xsession = {
     enable = true;
 
@@ -50,8 +45,7 @@
     package = pkgs.vanilla-dmz;
     name = "Vanilla-DMZ";
     size = 24;
-    # x11.enable = true;
-    # x11.defaultCursor = "xC_left_ptr";
+    gtk.enable = true;
   };
 
 }
