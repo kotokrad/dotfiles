@@ -4,18 +4,22 @@
   programs.mpv = {
     enable = true;
     bindings = {
-      WHEEL_UP      = "add volume 2";
-      WHEEL_DOWN    = "add volume -2";
-      UP            = "add volume 5";
-      DOWN          = "add volume -5";
-      RIGHT         = "no-osd seek  2 exact";
-      LEFT          = "no-osd seek -2 exact";
+      "WHEEL_UP"    = "add volume 2";
+      "WHEEL_DOWN"  = "add volume -2";
+      "UP"          = "add volume 5";
+      "DOWN"        = "add volume -5";
+      "RIGHT"       = "no-osd seek  2 exact";
+      "LEFT"        = "no-osd seek -2 exact";
       "Alt+LEFT"    = "seek -15 exact";
       "Alt+RIGHT"   = "seek 15 exact";
       "Ctrl+LEFT"   = "seek -60";
       "Ctrl+RIGHT"  = "seek 60";
       "Shift+LEFT"  = "no-osd sub-seek -1";
       "Shift+RIGHT" = "no-osd sub-seek  1";
+      "["           = "add speed -0.25";
+      "]"           = "add speed 0.25";
+      "{"           = "add speed -1";
+      "}"           = "add speed 1";
 
       # Fix-sub-timing
       "Ctrl+z"      = "sub-step -1";
