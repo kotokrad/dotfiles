@@ -3,7 +3,7 @@
              toggleterm toggleterm
              terminal toggleterm.terminal}})
 
-(toggleterm.setup {:highlights {:NormalFloat {:guibg "Normal"}}})
+(toggleterm.setup {:highlights {:NormalFloat {:guibg "#282828"}}})
 
 (local lazygit (terminal.Terminal:new {:cmd "lazygit"
                                        :hidden true

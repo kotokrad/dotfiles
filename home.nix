@@ -12,22 +12,18 @@ let
     simplescreenrecorder
     arandr                      # simple GUI for xrandr
     asciinema                   # record the terminal
-    # insomnia                    # rest client with graphql support
     postman                     # rest client
-    # pcmanfm
     simplescreenrecorder
     lxappearance
     mate.mate-calc
     gnome.file-roller
-    # mate.engrampa
-    # neuron-notes
     ranger
     zoom-us
     discord
     inkscape
     slack
     libreoffice-fresh
-    fbreader
+    foliate                     # e-book reader
     imagemagick
     wireshark
     opensnitch-ui
@@ -40,7 +36,6 @@ let
     # gnomecast                   # chromecast local files
     killall                     # kill processes by name
     libnotify                   # notify-send command
-    # betterlockscreen
     xtrlock-pam                 # PAM based X11 screen locker
     ncdu                        # disk space info (a better du)
     neofetch                    # command-line system information
@@ -70,7 +65,6 @@ let
     ffmpeg
     xcolor                      # color picker
     lsof
-    trash-cli
 
   # TEMP
   # programming languages course homework
@@ -109,7 +103,8 @@ let
     # nodePackages.typescript                 # NOTE: v4.4.4 installed globally for now.
     # nodePackages.typescript-language-server # NOTE: v0.8.1 installed globally for now
     nodePackages.prettier
-    deno                        # deno lsp; used as prettier alternative
+    deno
+    bun
 
   # lisp:
     racket
@@ -127,7 +122,7 @@ let
     # hoogle                      # documentation
 
   # Misc
-    gnome3.adwaita-icon-theme
+    gnome.adwaita-icon-theme
     qmk-udev-rules              # for QMK flashing
     # audacious                 # simple music player
     # bottom                    # alternative to htop & ytop
@@ -176,7 +171,7 @@ let
 
   xmonadPkgs = with pkgs; [
     # networkmanager_dmenu   # networkmanager on dmenu
-    # networkmanagerapplet   # networkmanager applet
+    networkmanagerapplet   # networkmanager applet
     nitrogen               # wallpaper manager
     xcape                  # keymaps modifier
     xorg.xkbcomp           # keymaps modifier
@@ -307,11 +302,19 @@ in
   };
 
   services.network-manager-applet.enable = true;
-  services.udiskie.enable = true;
-  services.udiskie.automount = false;
   services.unclutter.enable = true;
   services.syncthing.enable = true;
-  services.syncthing.tray.enable = true;
+  # services.syncthing.tray.enable = true;
+  services.udiskie = {
+    enable = true;
+    automount = false;
+    settings = {
+      device_config = [{
+        loop_file = "/media/docker-volume.img";
+        ignore = true;
+      }];
+    };
+  };
   services.xidlehook = {
     enable = true;
     not-when-audio = true;

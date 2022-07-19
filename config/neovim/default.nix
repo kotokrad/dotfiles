@@ -78,7 +78,6 @@ let
     vim-easy-align
     vim-jsx-pretty
     vim-nix                          # nix support (highlighting, etc)
-    vim-sexp
     null-ls-nvim                     # lsp
     # nvim-spectre
     # sniprun                          # evaluate code snippets
@@ -126,7 +125,10 @@ in
     withRuby     = false;
   };
 
-  home.packages = [ pkgs.neovim-remote ];
+  home.packages = with pkgs; [
+    neovim-remote
+    glib # nvim-tree uses `gio trash`
+  ];
 
   xdg.configFile = {
     "nvim/queries".source = ./queries;

@@ -28,4 +28,4 @@
 (require :dotfiles.plugins.misc)
 
 ;; Custom colors
-(require :dotfiles.highlights)
+; (require :dotfiles.highlights)

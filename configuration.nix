@@ -47,6 +47,8 @@
   networking.networkmanager.enable = true;
   networking.useDHCP = false;
   networking.interfaces.wlp1s0.useDHCP = true;
+  # Strict reverse path filtering breaks Tailscale exit node use and some subnet routing setups
+  networking.firewall.checkReversePath = "loose";
 
   virtualisation.docker.enable = true;
 
