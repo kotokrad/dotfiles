@@ -254,6 +254,8 @@ in
     git.aliases = {
       hist = "log --pretty=format:'%C(yellow)[%ad]%C(reset) %C(green)[%h]%C(reset) | %C(red)%s %C(bold red){{%an}}%C(reset) %C(blue)%d%C(reset)' --graph --date=short";
     };
+    git.delta.enable = true;
+    git.delta.options.syntax-theme = "gruvbox-dark";
 
     fzf = {
       enable = true;
@@ -282,6 +284,10 @@ in
     bat.config.theme = "gruvbox-dark";
 
     lazygit.enable = true;
+    lazygit.settings.git.paging = {
+      colorArg = "always";
+      pager = "${pkgs.delta}/bin/delta --dark --paging=never";
+    };
     ncmpcpp.enable = true;
     feh.enable = true;
   };
