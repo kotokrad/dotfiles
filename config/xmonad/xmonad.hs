@@ -174,10 +174,6 @@ myLayout = lessBorders Screen
            $ mkToggle (single NBFULL)
            layouts
 
--- myLayout = smartBorders
---            $ mkToggle (NOBORDERS ?? FULL ?? EOT)
---            layouts
-
 
 ------------------------------------------------------------------------
 -- Colors and borders
@@ -187,8 +183,6 @@ statusbarInactiveTitleColor    = "#3c3836"
 statusbarCurrentWorkspaceColor = "#458588"
 statusbarHiddenWorkspaceColor  = "#3c3836"
 statusbarDefaultColor          = "#3c3836"
--- statusbarDefaultColor          = "gray"
--- statusbarMutedColor            = "#7c6f64"
 
 -- borders
 myBorderWidth         = 1
@@ -397,6 +391,10 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
       | (i, k) <- zip (XMonad.workspaces conf) [xK_1 .. xK_6]
       , (f, m) <- [(W.greedyView, 0), (liftM2 (.) W.view W.shift, shiftMask)]]
 
+  -- [((m .|. modMask, k), windows $ onCurrentScreen f i)
+  --     | (i, k) <- zip (workspaces' conf) [xK_1 .. xK_6]
+  --     , (f, m) <- [(W.greedyView, 0), (liftM2 (.) W.view W.shift, shiftMask)]]
+
   ++
 
   -- mod-{w,e,r} %! Switch to physical/Xinerama screens 1, 2, or 3
@@ -519,6 +517,7 @@ defaults = def {
     borderWidth        = myBorderWidth,
     modMask            = myModMask,
     workspaces         = myWorkspaces,
+    -- workspaces         = withScreens 2 myWorkspaces,
     normalBorderColor  = myNormalBorderColor,
     focusedBorderColor = myFocusedBorderColor,
 

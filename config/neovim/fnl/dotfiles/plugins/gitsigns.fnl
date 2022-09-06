@@ -5,6 +5,11 @@
 (gitsigns.setup
   {:keymaps {}})
 
+
+;; Navigation
+(util.noremap :n "]h" "<cmd>lua require'gitsigns'.next_hunk()<cr>")
+(util.noremap :n "[h" "<cmd>lua require'gitsigns'.prev_hunk()<cr>")
+
 ;; Normal mode
 (util.map-group {:prefix :<leader>}
                 {:g {:name "git"
@@ -13,7 +18,9 @@
                      :r ["<cmd>lua require'gitsigns'.reset_hunk()<cr>" "Reset hunk"]
                      :R ["<cmd>lua require'gitsigns'.reset_buffer()<cr>" "Reset buffer"]
                      :p ["<cmd>lua require'gitsigns'.preview_hunk()<cr>" "Preview hunk"]
-                     :b ["<cmd>lua require'gitsigns'.blame_line(true)<cr>" "Blame line"]
+                     :b ["<cmd>lua require'gitsigns'.blame_line{full=false}<cr>" "Blame line"]
+                     :B ["<cmd>lua require'gitsigns'.blame_line{full=true}<cr>" "Blame line (full)"]
+                     :t ["<cmd>lua require'gitsigns'.toggle_current_line_blame()<cr>" "Toggle line blame"]
                      :S ["<cmd>lua require'gitsigns'.stage_buffer()<cr>" "Stage buffer"]
                      :U ["<cmd>lua require'gitsigns'.reset_buffer_index()<cr>" "Reset buffer index"]}})
 

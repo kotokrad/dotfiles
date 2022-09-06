@@ -41,9 +41,11 @@
                     :on_attach attach-handler})
     (lsp.rnix.setup {:capabilities capabilities
                      :on_attach attach-handler})
-    (lsp.elixirls.setup {:capabilities capabilities
-                         :on_attach attach-handler
-                         :cmd ["elixir-ls"]})
+    (lsp.rust_analyzer.setup {:capabilities capabilities
+                              :on_attach attach-handler})
+    ; (lsp.elixirls.setup {:capabilities capabilities
+    ;                      :on_attach attach-handler
+    ;                      :cmd ["elixir-ls"]})
 
     (set vim.lsp.handlers.textDocument/publishDiagnostics
          (vim.lsp.with vim.lsp.diagnostic.on_publish_diagnostics

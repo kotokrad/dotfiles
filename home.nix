@@ -86,13 +86,14 @@ let
 
   # Dev
     gnumake
-    # gcc
-    binutils-unwrapped          # NOTE: fixes the `ar` error required by cabal
+    gcc
+    # binutils-unwrapped          # NOTE: fixes the `ar` error required by cabal
     openssl
     pkgconfig
     tree-sitter
     python3
     rustup
+    rust-analyzer
     pgweb                       # PostgreSQL client
     elixir
     elixir_ls
@@ -256,6 +257,8 @@ in
     };
     git.delta.enable = true;
     git.delta.options.syntax-theme = "gruvbox-dark";
+    git.lfs.enable = true;
+    git.lfs.skipSmudge = true;
 
     fzf = {
       enable = true;

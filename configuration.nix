@@ -86,7 +86,6 @@
     blueman.enable = true;
     redshift.enable = true;
     illum.enable = true;                 # brightness buttons
-    greenclip.enable = true;             # clipboard manager to be integrated with rofi
     gvfs.enable = true;
     tumbler.enable = true;
     opensnitch.enable = true;
@@ -193,6 +192,8 @@
     opengl.enable = true;
     opengl.driSupport = true;
     opengl.driSupport32Bit = true; # Needed for steam
+    opengl.extraPackages = with pkgs; [ amdvlk ];
+    opengl.extraPackages32 = with pkgs; [ driversi686Linux.amdvlk ];
     pulseaudio.enable = true;
     pulseaudio.support32Bit = true;
     video.hidpi.enable = true;
@@ -200,6 +201,7 @@
 
   nix = {
     package = pkgs.nixUnstable;
+    settings.trusted-users = [ "root" "kotokrad" ];
     extraOptions = ''
       experimental-features = nix-command flakes
     '';
