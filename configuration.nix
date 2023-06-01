@@ -203,7 +203,6 @@ in
     opengl.extraPackages32 = with pkgs; [ driversi686Linux.amdvlk ];
     pulseaudio.enable = true;
     pulseaudio.support32Bit = true;
-    video.hidpi.enable = true;
   };
 
   nix = {

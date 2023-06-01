@@ -21,7 +21,7 @@
     "Xft.hinting" = 1;
     "Xft.antialias" = 1;
     "Xft.rgba" = "rgb";
-    "Xft.font" = "FantasqueSansMono Nerd Font 14";
+    "Xft.font" = "FantasqueSansM Nerd Font 14";
   };
 
   xsession = {

@@ -19,7 +19,7 @@
         padding = 16;
         horizontal_padding = 16;
         font = "JetBrainsMono Nerd Font 10";
-        # font = "FantasqueSansMono Nerd Font 10";
+        # font = "FantasqueSansM Nerd Font 10";
         line_height = 4;
         format = ''<b>%s</b>\n%b'';
         dmenu = "${pkgs.rofi}/bin/rofi -dmenu";

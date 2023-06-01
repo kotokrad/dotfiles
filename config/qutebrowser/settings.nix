@@ -4,7 +4,7 @@
   tabs.background = true;
   downloads.position = "bottom";
   # spellcheck.languages = ["en-US" "ru-RU"];
-  fonts.web.family.fantasy = "FantsqueSansMono Nerd Font";
+  fonts.web.family.fantasy = "FantsqueSansM Nerd Font";
 
   # HiDPI
   qt.highdpi = true;

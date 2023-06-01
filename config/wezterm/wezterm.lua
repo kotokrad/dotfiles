@@ -15,10 +15,10 @@ end)
 
 return {
     -- default_prog = {"/run/current-system/sw/bin/tmux"},
-    font = wezterm.font("FantasqueSansMono Nerd Font", {weight = "Regular", italic = false}),
+    font = wezterm.font("FantasqueSansM Nerd Font", {weight = "Regular", italic = false}),
     font_size = 11.0,
     enable_tab_bar = false,
-    color_scheme = "Gruvbox Dark",
+    color_scheme = "Gruvbox dark, hard (base16)",
     -- color_scheme = "tokyonight_night",
     -- color_schemes = {
     --     tokyonight_storm = require("./tokyonight").storm,
