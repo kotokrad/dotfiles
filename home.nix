@@ -2,10 +2,14 @@
 
 
 let
+  xtrlock-pam-python3 = pkgs.xtrlock-pam.overrideAttrs (
+    old: {
+      buildInputs = with pkgs; [ python38 pam xorg.libX11 ];
+    }
+  );
   defaultPkgs = with pkgs; [
   # Applications
     chromium
-    wezterm
     tdesktop                    # telegram messaging client
     transmission-gtk
     vlc                         # media player
@@ -26,7 +30,7 @@ let
     foliate                     # e-book reader
     imagemagick
     wireshark
-    opensnitch-ui
+    # opensnitch-ui
     obsidian
 
   # Utility
@@ -36,7 +40,7 @@ let
     # gnomecast                   # chromecast local files
     killall                     # kill processes by name
     libnotify                   # notify-send command
-    xtrlock-pam                 # PAM based X11 screen locker
+    xtrlock-pam-python3         # PAM based X11 screen locker
     ncdu                        # disk space info (a better du)
     neofetch                    # command-line system information
     scrot                       # screenshot tool
@@ -86,14 +90,13 @@ let
 
   # Dev
     gnumake
-    gcc
+    # gcc
     # binutils-unwrapped          # NOTE: fixes the `ar` error required by cabal
     openssl
     pkgconfig
     tree-sitter
     python3
     rustup
-    rust-analyzer
     pgweb                       # PostgreSQL client
     elixir
     elixir_ls
@@ -103,6 +106,8 @@ let
     yarn
     # nodePackages.typescript                 # NOTE: v4.4.4 installed globally for now.
     # nodePackages.typescript-language-server # NOTE: v0.8.1 installed globally for now
+    nodePackages.typescript
+    nodePackages.typescript-language-server
     nodePackages.prettier
     deno
     bun
@@ -168,6 +173,7 @@ let
   fontPkgs = with pkgs; [
     font-awesome          # awesome fonts
     material-design-icons # fonts with glyphs
+    open-sans
   ];
 
   xmonadPkgs = with pkgs; [
@@ -199,6 +205,7 @@ in
   nixpkgs.config.allowUnfree = true;
 
   imports = [
+    ./config/wezterm
     ./config/firefox
     ./config/dunst
     ./config/picom
@@ -243,7 +250,6 @@ in
     zsh.initExtra = ''
       any-nix-shell zsh --info-right | source /dev/stdin
       bindkey -v
-      bindkey '^R' history-incremental-search-backward
       bindkey '^[[7~' beginning-of-line
       bindkey '^[[8~' end-of-line
       eval "$RUN"
@@ -262,7 +268,7 @@ in
 
     fzf = {
       enable = true;
-      enableZshIntegration = false;
+      enableZshIntegration = true;
       defaultCommand = ''
         ag --follow -g \"\"
       '';
@@ -270,6 +276,7 @@ in
 
     starship = {
       enable = true;
+      enableZshIntegration = true;
 
       settings = {
         character = {
@@ -314,6 +321,11 @@ in
   services.unclutter.enable = true;
   services.syncthing.enable = true;
   # services.syncthing.tray.enable = true;
+  services.gammastep = {
+    enable = true;
+    tray = true;
+    provider = "geoclue2";
+  };
   services.udiskie = {
     enable = true;
     automount = false;
@@ -336,7 +348,7 @@ in
       # }
       {
         delay = 120;
-        command = "${pkgs.xtrlock-pam}/bin/xtrlock-pam";
+        command = "${xtrlock-pam-python3}/bin/xtrlock-pam";
       }
       {
         delay = 300;
@@ -345,7 +357,6 @@ in
     ];
   };
 
-  xdg.configFile."wezterm/".source = ./config/wezterm;
   xdg.userDirs = {
     enable = true;
     desktop     = "$HOME/desktop";
@@ -367,6 +378,11 @@ in
       "x-scheme-handler/tg" = "telegramdesktop.desktop";
       "x-scheme-handler/magnet" = "transmission-gtk.desktop";
       "x-scheme-handler/postman" = "Postman.desktop";
+    };
+    associations.added = {
+      "video/mp4" = "vlc.desktop";
+      "video/webm" = "vlc.desktop";
+      "image/svg+xml" = "org.xfce.mousepad.desktop";
     };
   };
 

@@ -15,7 +15,9 @@
 (set nvim.g.vimwiki_folding :expr)
 (set nvim.g.vimwiki_list [{:path "~/notes/"
                            :syntax "markdown"
-                           :ext ".md"}])
+                           :ext ".md"
+                           :bullet_types ["-" "*"]
+                           :cycle_bullets 1}])
 
 ;; Markdown fenced languages
 (set nvim.g.markdown_fenced_languages

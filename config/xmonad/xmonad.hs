@@ -36,7 +36,8 @@ import XMonad.Layout.Simplest
 import XMonad.Layout.SubLayouts
 import XMonad.Layout.WindowNavigation
 import XMonad.Layout.ZoomRow
--- import XMonad.Layout.IndependentScreens
+import XMonad.Layout.IndependentScreens
+import XMonad.Actions.WorkspaceNames
 
 import XMonad.Util.Run (spawnPipe)
 import XMonad.Util.NamedScratchpad
@@ -118,6 +119,7 @@ myWindowRules = composeAll
     , className =? "librewolf"                    --> viewShift myWs1Web
     , className =? "qutebrowser"                  --> viewShift myWs1Web
     , className =? "org.wezfurlong.wezterm"       --> viewShift myWs2Term
+    , className =? "nixconf"                      --> viewShift myWs3Code
     , className =? ".thunar-wrapped_"             --> viewShift myWs4Files
     , className =? "Thunar"                       --> viewShift myWs4Files
     , className =? "Transmission-gtk"             --> viewShift myWs4Files
@@ -139,7 +141,7 @@ myWindowRules = composeAll
     ]
   where
     viewShift :: WorkspaceId -> ManageHook
-    viewShift = doF . liftM2 (.) W.greedyView W.shift
+    viewShift = doF . liftM2 (.) W.greedyView W.shift . marshall (S 0)
 
 
 ------------------------------------------------------------------------
@@ -156,10 +158,10 @@ gapper s = spacingRaw True (uniformBorder s) True (uniformBorder s) True
     uniformBorder n = Border n n n n
 
 layouts = avoidStruts
-            $ onWorkspace myWs1Web fullFirst
-            $ onWorkspace myWs3Code fullFirst
-            $ onWorkspace myWs5Chat fullFirst
-            $ onWorkspace myWs6Misc fullFirst
+            $ onWorkspace (marshall (S 0) myWs1Web) fullFirst
+            $ onWorkspace (marshall (S 0) myWs3Code) fullFirst
+            $ onWorkspace (marshall (S 0) myWs5Chat) fullFirst
+            $ onWorkspace (marshall (S 0) myWs6Misc) fullFirst
             tiledFirst
           where
             fullFirst  = Full ||| tiled
@@ -387,13 +389,13 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
 
   -- mod-[1..9], Switch to workspace N
   -- mod-shift-[1..9], Move client to workspace N
-  [((m .|. modMask, k), windows $ f i)
-      | (i, k) <- zip (XMonad.workspaces conf) [xK_1 .. xK_6]
-      , (f, m) <- [(W.greedyView, 0), (liftM2 (.) W.view W.shift, shiftMask)]]
-
-  -- [((m .|. modMask, k), windows $ onCurrentScreen f i)
-  --     | (i, k) <- zip (workspaces' conf) [xK_1 .. xK_6]
+  -- [((m .|. modMask, k), windows $ f i)
+  --     | (i, k) <- zip (XMonad.workspaces conf) [xK_1 .. xK_6]
   --     , (f, m) <- [(W.greedyView, 0), (liftM2 (.) W.view W.shift, shiftMask)]]
+
+  [((m .|. modMask, k), windows $ onCurrentScreen f i)
+      | (i, k) <- zip (workspaces' conf) [xK_1 .. xK_6]
+      , (f, m) <- [(W.greedyView, 0), (liftM2 (.) W.view W.shift, shiftMask)]]
 
   ++
 
@@ -456,7 +458,7 @@ myScratchpads =
     where
       centerFloat = customFloating $ W.RationalRect (1/6) (1/6) (2/3) (2/3)
       quakeFloat = customFloating $ W.RationalRect 0 0 1 (1/3)
-      lofi = "mpv --no-video --volume=70 https://youtu.be/5qap5aO4i9A"
+      lofi = "mpv --no-video --volume=70 https://youtu.be/jfKfPfyJRdk"
       run commands term = "RUN=\"" ++ L.intercalate " && " commands ++ "\" " ++ term
       bottomLinePrompt = "printf '\\n%.0s' {1..100}"
       printMemo = "bat -p ~/notes/memo.md"
@@ -496,6 +498,7 @@ main = do
   D.requestAccess dbus
   let polybar = withEasySB (polybarSB dbus) defToggleStrutsKey
   xmonad $ docks
+         -- $ workspaceNamesEwmh
          $ ewmhFullscreen
          $ ewmh
          $ polybar
@@ -516,8 +519,8 @@ defaults = def {
     focusFollowsMouse  = myFocusFollowsMouse,
     borderWidth        = myBorderWidth,
     modMask            = myModMask,
-    workspaces         = myWorkspaces,
-    -- workspaces         = withScreens 2 myWorkspaces,
+    -- workspaces         = myWorkspaces,
+    workspaces         = withScreens 2 myWorkspaces,
     normalBorderColor  = myNormalBorderColor,
     focusedBorderColor = myFocusedBorderColor,
 

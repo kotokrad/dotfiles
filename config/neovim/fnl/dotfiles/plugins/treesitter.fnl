@@ -19,7 +19,8 @@
 
 (treesitter.setup
   {:ensure_installed :all
-   :ignore_install ["swift"]
+   :parser_install_dir "~/.local/share/nvim/site"
+   :ignore_install ["agda" "blueprint" "gitattributes" "gitignore" "hlsl" "jsonnet" "menhir" "meson" "racket" "sxhkdrc" "twig"]
    :highlight {:enable true
                :additional_vim_regex_highlighting false}
    :indent {:enable true}
@@ -27,4 +28,5 @@
                           ;; Automatically jump forward to textobj, similar to targets.vim
                           :lookahead true
                           :keymaps {:af "@function.outer"
-                                    :if "@function.inner"}}}})
+                                    :if "@function.inner"}}}
+   :context_commentstring {:enable true}})

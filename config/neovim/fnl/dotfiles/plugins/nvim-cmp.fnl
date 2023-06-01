@@ -34,10 +34,18 @@
 
 (cmp.setup {:snippet {:expand (fn [args] (luasnip.lsp_expand args.body))}
             :mapping {:<Tab> (fn [fallback]
+                               (if (and (luasnip.in_snippet) (luasnip.jumpable 1))
+                                   (luasnip.jump 1)
+                                   (cmp.visible)
+                                   (cmp.select_next_item)
+                                   (fallback)))
+                      :<c-j> (fn [fallback]
                                (if (cmp.visible)
                                    (cmp.select_next_item)
-                                   (and (luasnip.in_snippet) (luasnip.jumpable 1))
-                                   (luasnip.jump 1)
+                                   (fallback)))
+                      :<c-k> (fn [fallback]
+                               (if (cmp.visible)
+                                   (cmp.select_prev_item)
                                    (fallback)))
                       :<s-tab> (fn [fallback]
                                  (if (cmp.visible)
@@ -48,7 +56,7 @@
                       :<c-space> (fn []
                                    (if (luasnip.expandable)
                                        (luasnip.expand)
-                                       (cmp.mapping.complete)))
+                                       (cmp.complete)))
                       :<cr> (cmp.mapping.confirm {:select true})
                       :<c-c> (cmp.mapping.abort)}
             :sources [{:name "nvim_lsp"}

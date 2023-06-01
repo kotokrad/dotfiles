@@ -63,13 +63,16 @@ let
     haskell-vim
     lsp-colors-nvim                  # add missing LSP highlight groups for unsupported color schemes
     luasnip
+    friendly-snippets                # collection of snippets for different languages
     numb-nvim                        # peek line number
     nvim-autopairs
     nvim-cmp
     nvim-lspconfig
     nvim-lsputils                    # used for code actions
+    # nvim-treesitter.withAllGrammars
     nvim-treesitter
     nvim-treesitter-textobjects
+    nvim-ts-context-commentstring    # commenting tsx
     parinfer-rust
     playground                       # tree-sitter playground
     purescript-vim
@@ -123,11 +126,12 @@ in
     withNodeJs   = true;
     withPython3  = false;
     withRuby     = false;
+    extraLuaPackages = ps: [ ps.jsregexp ]; # used in `luasnip` snippets
   };
 
   home.packages = with pkgs; [
     neovim-remote
-    glib # nvim-tree uses `gio trash`
+    glib                    # nvim-tree uses `gio trash`
   ];
 
   xdg.configFile = {
@@ -135,7 +139,7 @@ in
     "nvim/fnl".source = ./fnl;
     "nvim/fnl".onChange = ''
       rm -rf /home/kotokrad/.config/nvim/lua
-      ${pkgs.neovim}/bin/nvim --headless -c "lua require('aniseed.env').init()" -c q
+      ${pkgs.neovim}/bin/nvim --headless -c "lua require(\"aniseed.env\").init()" -c "q"
     '';
     # "nvim/ftplugin".source = ./ftplugin;
   };

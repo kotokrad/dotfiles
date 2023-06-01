@@ -3,6 +3,9 @@
 {
   programs.mpv = {
     enable = true;
+    # package = pkgs.mpv-unwrapped.override {
+    #   pipewireSupport = false; # FIXME: remove after package fix
+    # };
     bindings = {
       "WHEEL_UP"    = "add volume 2";
       "WHEEL_DOWN"  = "add volume -2";
@@ -20,6 +23,10 @@
       "]"           = "add speed 0.25";
       "{"           = "add speed -1";
       "}"           = "add speed 1";
+      "MOUSE_BTN7"  = "no-osd seek 2 exact";
+      "MOUSE_BTN8"  = "no-osd seek -2 exact";
+      "NEXT"        = "no-osd seek 2 exact";
+      "PREV"        = "no-osd seek -2 exact";
 
       # Fix-sub-timing
       "Ctrl+z"      = "sub-step -1";
@@ -51,7 +58,9 @@
       # Clearer downmixing to stereo speakers/headphones
       audio-channels = 2;
 
-      sub-file-paths = "**";
+      slang = "eng,en,rus,ru,jpn,jp,chi,zho,zh";
+
+      sub-file-paths-add = "ass:srt:sub:Sub:SUB:subs:Subs:SUBS:subtitles:Subtitles";
       audio-file-paths="**";
 
       sub-auto = "fuzzy";
@@ -65,6 +74,8 @@
 
   xdg.mimeApps.defaultApplications = {
     "video/x-matroska" = "mpv.desktop";
+    "video/mp4" = "mpv.desktop";
+    "video/webm" = "mpv.desktop";
   };
 
   home.packages = [

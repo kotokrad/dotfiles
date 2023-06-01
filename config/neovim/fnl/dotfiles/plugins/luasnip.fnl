@@ -1,25 +1,28 @@
 (module dotfiles.plugins.luasnip
   {autoload {nvim aniseed.nvim
              util dotfiles.util
-             ls luasnip}})
+             ls luasnip
+             vscode luasnip.loaders.from_vscode}})
 
-;; Examples: https://github.com/L3MON4D3/LuaSnip/blob/master/Examples/snippets.lua
-
-; Parsing snippets: First parameter: Snippet-Trigger, Second: Snippet body.
-; Placeholders are parsed into choices with 1. the placeholder text(as a snippet) and 2. an empty strin.
-; This means they are not SELECTed like in other editors/Snippet engines.
 (defn- snip [name trig body]
   (ls.parser.parse_snippet
     {:trig trig :name name}
     body))
 
-(ls.add_snippets :javascript [(ls.parser.parse_snippet {:trig "lsp"} "$1 is ${2|hard,easy,challenging|}")
-                              (snip "Simple console.log"
+;; Load `friendly-snippets`
+(vscode.lazy_load {:default_priority 500
+                   :override_priority 500})
+
+;; Fix duplications
+(ls.config.setup {:region_check_events "CursorHold,InsertLeave"
+                  :delete_check_events "TextChanged,InsertEnter"})
+
+(ls.add_snippets :javascript [(snip "Simple console.log"
                                     :log
-                                    "console.log(${1:value})")
+                                    "console.log(\"👾\", \"${1:value}\")")
                               (snip "Debug console.log"
                                     :clo
-                                    "console.log('${1:value} =>', ${1:value})")
+                                    "console.log(\"👾\", \"${1:value} =>\", ${1:value})")
                               (snip "Debug object with console.dir"
                                     :dir
                                     "console.dir(${1:value}, { depth: null })")
@@ -27,17 +30,26 @@
                                     :f
                                     "() => ")
                               (snip "anonymous function with arguments"
-                                    :fn
+                                    :F
                                     "($1) => $2")
                               (snip "anonymous function with body"
-                                    :F
+                                    :fn
                                     "($1) => {$2}")
                               (snip "default export"
                                     :e
                                     "export ")
                               (snip "default export"
                                     :ed
-                                    "export default ")])
+                                    "export default ")
+                              (snip "useState()"
+                                    :us
+                                    "const [${1:state}, set${1/(.*)/${1:/capitalize}/}] = useState(${2:initialState});")
+                              (snip "useState<Type>()"
+                                    :uS
+                                    "const [${1:state}, set${1/(.*)/${1:/capitalize}/}] = useState<${2:string}>(${3:initialState});")
+                              (snip "useEffect()"
+                                    :ue
+                                    "useEffect(() => {\n\t$1\n}, [$3]);")])
 
 (ls.filetype_extend :typescript [:javascript])
 (ls.filetype_extend :typescriptreact [:javascript])

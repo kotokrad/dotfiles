@@ -4,6 +4,13 @@
 
 { config, pkgs, lib, inputs, ... }:
 
+let
+  xtrlock-pam-python3 = pkgs.xtrlock-pam.overrideAttrs (
+    old: {
+      buildInputs = with pkgs; [ python38 pam xorg.libX11 ];
+    }
+  );
+in
 {
   imports =
     [
@@ -49,6 +56,7 @@
   networking.interfaces.wlp1s0.useDHCP = true;
   # Strict reverse path filtering breaks Tailscale exit node use and some subnet routing setups
   networking.firewall.checkReversePath = "loose";
+  systemd.services.NetworkManager-wait-online.enable = false;
 
   virtualisation.docker.enable = true;
 
@@ -72,24 +80,23 @@
     coreutils
     wget
     git
-    xtrlock-pam
+    xtrlock-pam-python3
     ntfs3g
   ];
 
-  location.provider = "manual";
-  location.latitude = 9.7486;
-  location.longitude = 100.0206;
+  location.provider = "geoclue2";
 
   services = {
     gnome.gnome-keyring.enable = true;
     upower.enable = true;
     blueman.enable = true;
-    redshift.enable = true;
     illum.enable = true;                 # brightness buttons
     gvfs.enable = true;
     tumbler.enable = true;
-    opensnitch.enable = true;
+    # opensnitch.enable = true;
     tailscale.enable = true;
+    usbmuxd.enable = true;
+    avahi.enable = true;
 
     syncthing = {
       enable = true;
@@ -120,16 +127,16 @@
       xfce.xfconf
     ];
 
-    # tlp = {
-    #   # advanced power management
-    #   enable = true;
-    #   settings = {
-    #     # Do not suspend USB devices
-    #     # USB_AUTOSUSPEND = 0;
-    #     USB_EXCLUDE_BTUSB = 1;
-    #     RADEON_DPM_PERF_LEVEL_ON_BAT = "low";
-    #   };
-    # };
+#     tlp = {
+#       # advanced power management
+#       enable = true;
+#       settings = {
+#         # Do not suspend USB devices
+#         # USB_AUTOSUSPEND = 0;
+#         USB_EXCLUDE_BTUSB = 1;
+#         RADEON_DPM_PERF_LEVEL_ON_BAT = "low";
+#       };
+#     };
 
     xserver = {
       enable = true;
@@ -216,20 +223,30 @@
     # japanese fonts:
     ipafont
     kochi-substitute
+    # chinese fonts:
+    noto-fonts
+    source-han-sans
+    source-han-serif
   ];
 
   fonts.fontconfig.defaultFonts = {
     monospace = [
       "DejaVu Sans Mono"
       "IPAGothic"
+      "Noto Sans Mono CJK SC"
+      "Sarasa Mono SC"
     ];
     sansSerif = [
       "DejaVu Sans"
       "IPAPGothic"
+      "Noto Sans CJK SC"
+      "Source Han Sans SC"
     ];
     serif = [
       "DejaVu Serif"
       "IPAPMincho"
+      "Noto Serif CJK SC"
+      "Source Han Serif SC"
     ];
   };
 
@@ -265,8 +282,9 @@
   programs.adb.enable = true;
   programs.thefuck.enable = true;
   programs.xss-lock.enable = true;
-  programs.xss-lock.lockerCommand = "${pkgs.xtrlock-pam}/bin/xtrlock-pam";
+  programs.xss-lock.lockerCommand = "${xtrlock-pam-python3}/bin/xtrlock-pam";
   programs.wireshark.enable = true;
+  programs.nix-ld.enable = true;
 
 
   # This value determines the NixOS release from which the default

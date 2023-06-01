@@ -1,4 +1,4 @@
-{ pkgs, buildVimPlugin, fetchFromGitHub, rustPlatform }:
+{ pkgs, buildVimPlugin, vimUtils, fetchFromGitHub, rustPlatform }:
 
 {
   vim-buftabline = buildVimPlugin {
@@ -33,20 +33,24 @@
 #     nativeBuildInputs = [ pkgs.janet ];
 #   };
 
-  parinfer-rust =
+  parinfer-rust = with pkgs;
   let
     parinfer-src = fetchFromGitHub {
       owner  = "eraserhd";
       repo   = "parinfer-rust";
-      rev    = "b6d5d1c";
-      sha256 = "sha256:04n9lz9r0kcayy0aynrwk3vffr8hdhx13zr05qsk0j679jizh8ks";
+      rev    = "189d261";
+      sha256 = "sha256-b+bnWeoYNLOtB7RHN7asfaQoSoOzbxN1vlkNcYlvMIA=";
     };
     parinfer-rust-bin = rustPlatform.buildRustPackage rec {
-      pname = "parinfer-rust-bin";
-      version = "b6d5d1c";
+      pname = "parinfer-rust";
+      version = "189d261";
       src = parinfer-src;
-      cargoSha256 = "sha256-Ez4LkM1vO7AwsDSkZeVaS4gcTZ5+lI4aLDABfH2Sk9M=";
-      # doCheck = false;
+
+      cargoSha256 = "sha256-OnUwWaybYxMzBBsBhN7vrMZ6LRHTNEk6YcWwTfLDdl8=";
+
+      nativeBuildInputs = [ llvmPackages.clang ];
+      buildInputs = [ llvmPackages.libclang ];
+      LIBCLANG_PATH = "${llvmPackages.libclang.lib}/lib";
     };
   in
   buildVimPlugin {
@@ -58,6 +62,17 @@
       ln -s ${parinfer-rust-bin}/lib/libparinfer_rust.so ./target/release/
     '';
   };
+
+  # aniseed = vimUtils.buildVimPluginFrom2Nix {
+  #   pname = "aniseed";
+  #   version = "v3.31.0";
+  #   src = fetchFromGitHub {
+  #     owner  = "Olical";
+  #     repo   = "aniseed";
+  #     rev    = "9892a40";
+  #     sha256 = "sha256-f6YxGki6AEC5r4iAR4boX9Co5h2QuT1ucogtFdXacLU=";
+  #   };
+  # };
 
 #   nvim-treesitter = buildVimPlugin {
 #     pname = "nvim-treesitter";

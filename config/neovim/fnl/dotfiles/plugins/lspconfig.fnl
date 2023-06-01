@@ -9,6 +9,7 @@
 (null-ls.setup
   {:sources [; (nlb.formatting.fixjson.with {:filetypes ["json" "jsonc"]})
              ; (nlb.diagnostics.shellcheck)
+             nlb.formatting.prismaFmt
              (nlb.formatting.prettierd.with {:filetypes ["javascript"
                                                          "javascriptreact"
                                                          "typescript"
@@ -22,10 +23,10 @@
                                                          "jsonc"]})]})
 
 (let [lsp (require :lspconfig)
-      capabilities (cmp-nvim-lsp.update_capabilities (vim.lsp.protocol.make_client_capabilities))
+      capabilities (cmp-nvim-lsp.default_capabilities)
       attach-handler (fn [client]
                        (util.noremap :n :K "<cmd>lua vim.lsp.buf.hover({ focusable = false })<cr>")
-                       (util.noremap :n :<c-s> "<cmd>lua vim.lsp.buf.formatting()<cr>")
+                       (util.noremap :n :<c-s> "<cmd>lua vim.lsp.buf.format({async = true})<cr>")
                        (util.noremap :n :<localleader>a "<cmd>lua vim.lsp.buf.code_action()<cr>"))]
                        ;; Use "CursorHold,CursorHoldI" for input mode
                        ; (nvim.ex.autocmd "CursorHold * lua vim.lsp.diagnostic.show_line_diagnostics({ focusable = false })"))]
@@ -36,7 +37,7 @@
     (lsp.tsserver.setup {:capabilities capabilities
                          :on_attach (fn [client]
                                       (attach-handler client)
-                                      (set client.resolved_capabilities.document_formatting false))})
+                                      (set client.server_capabilities.documentFormattingProvider false))})
     (lsp.hls.setup {:capabilities capabilities
                     :on_attach attach-handler})
     (lsp.rnix.setup {:capabilities capabilities
@@ -71,8 +72,8 @@
 
 (util.map-group {:prefix :<leader>}
                 {:l {:name "lsp"
-                     :e ["<cmd> lua vim.lsp.diagnostic.show_line_diagnostics({ focusable = false })<cr>" "Expand Line Error"]
-                     :f ["<cmd>lua vim.lsp.buf.formatting()<cr>" "Format"]
+                     :e ["<cmd> lua vim.diagnostic.open_float({ focusable = false })<cr>" "Expand Line Error"]
+                     :f ["<cmd>lua vim.lsp.buf.format({ async = true })<cr>" "Format"]
                      :r ["<cmd>lua vim.lsp.buf.rename()<cr>" "Rename"]}})
 
 (util.map-group {:mode :n}
