@@ -216,6 +216,7 @@ in
     ./config/qutebrowser
     ./config/mpv
     ./config/lf
+    ./config/autorandr
   ];
 
   home = {
