@@ -28,5 +28,4 @@
                           ;; Automatically jump forward to textobj, similar to targets.vim
                           :lookahead true
                           :keymaps {:af "@function.outer"
-                                    :if "@function.inner"}}}
-   :context_commentstring {:enable true}})
+                                    :if "@function.inner"}}}})

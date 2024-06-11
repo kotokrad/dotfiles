@@ -15,7 +15,7 @@
 (require :dotfiles.plugins.neoscroll)
 (require :dotfiles.plugins.numb)
 (require :dotfiles.plugins.nvim-cmp)
-(require :dotfiles.plugins.nvim-tree)
+(require :dotfiles.plugins.neo-tree)
 (require :dotfiles.plugins.telescope)
 (require :dotfiles.plugins.toggleterm)
 (require :dotfiles.plugins.treesitter)

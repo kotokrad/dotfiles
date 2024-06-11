@@ -2,8 +2,7 @@
   {autoload {gitsigns gitsigns
              util dotfiles.util}})
 
-(gitsigns.setup
-  {:keymaps {}})
+(gitsigns.setup)
 
 
 ;; Navigation

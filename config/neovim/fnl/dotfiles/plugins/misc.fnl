@@ -1,6 +1,10 @@
 (module dotfiles.plugins.misc
   {autoload {nvim aniseed.nvim
-             todo-comments todo-comments}})
+             todo-comments todo-comments
+             surround nvim-surround}})
+
+;; nvim-surround
+(surround.setup)
 
 ;; todo-comments.nvim
 (todo-comments.setup)

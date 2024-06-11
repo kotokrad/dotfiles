@@ -1,11 +1,12 @@
-(module dotfiles.plugin.telescope
+(module dotfiles.plugins.telescope
   {autoload {nvim aniseed.nvim
              util dotfiles.util
              telescope telescope
              actions telescope.actions
              builtin telescope.builtin
              themes telescope.themes
-             trouble-telescope trouble.providers.telescope}})
+             trouble-telescope trouble.providers.telescope
+             dressing dressing}})
 
 (telescope.setup
   {:defaults {:mappings {:i {:<esc> actions.close
@@ -51,15 +52,18 @@
                         ; :previewer false
                         :prompt_title false}))
 
-(defn code-actions-theme []
-  (themes.get_cursor {:borderchars
-                        {:prompt ["─" "│" " " "│" "┌" "┐" "│" "│"]
-                         :results ["─" "│" "─" "│" "├" "┤" "┘" "└"]
-                         :preview [ "─" "│" "─" "│" "┌" "┐" "┘" "└"]}
-                        :layout_config {:width 0.2}
-                        :previewer false
-                        :prompt_title false}))
+; (defn code-actions-theme []
+;   (themes.get_cursor {:borderchars
+;                         {:prompt ["─" "│" " " "│" "┌" "┐" "│" "│"]
+;                          :results ["─" "│" "─" "│" "├" "┤" "┘" "└"]
+;                          :preview [ "─" "│" "─" "│" "┌" "┐" "┘" "└"]}
+;                         :layout_config {:width 0.2}
+;                         :previewer false
+;                         :prompt_title false}))
 
+(dressing.setup
+  {:select
+   {:telescope (centered-theme)}})
 
 ; (util.lnnoremap :ff "Telescope find_files hidden=true")
 ; (util.lnnoremap :f- "Telescope file_browser")
@@ -84,8 +88,8 @@
   ; (builtin.lsp_references (cursor-relative-theme)))
   (builtin.lsp_references (centered-theme)))
 
-(defn code-action []
-  (builtin.lsp_code_actions (code-actions-theme)))
+; (defn code-action []
+;   (builtin.lsp_code_actions (code-actions-theme)))
 
 (util.noremap :n :<c-f> "<cmd>Telescope live_grep<cr>")
 (util.noremap :n :<c-p> "<cmd>lua require'telescope.builtin'.find_files(require('telescope.themes').get_ivy())<cr>")

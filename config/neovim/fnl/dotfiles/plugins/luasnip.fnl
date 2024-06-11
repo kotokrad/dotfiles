@@ -47,9 +47,30 @@
                               (snip "useState<Type>()"
                                     :uS
                                     "const [${1:state}, set${1/(.*)/${1:/capitalize}/}] = useState<${2:string}>(${3:initialState});")
+                              (snip "className"
+                                    :cn
+                                    "className=\"$1\"")
                               (snip "useEffect()"
                                     :ue
-                                    "useEffect(() => {\n\t$1\n}, [$3]);")])
+                                    "useEffect(() => {\n\t$1\n}, [$3]);")
+                              (snip "React component"
+                                    :fc
+                                    "const $1: React.FC = () => ")
+                              (snip "React component (with filename)"
+                                    :Fc
+                                    "export const ${TM_FILENAME_BASE}: React.FC = () => ")
+                              (snip "React component with props"
+                                    :fp
+                                    "interface $1Props {\n  $2\n}\n\nconst $1: React.FC<$1Props> = ({ $3 }) => ")
+                              (snip "React component with props (with filename)"
+                                    :Fp
+                                    "interface ${TM_FILENAME_BASE}Props {\n  $1\n}\n\nexport const ${TM_FILENAME_BASE}: React.FC<${TM_FILENAME_BASE}Props> = ({ $2 }) => ")
+                              (snip "React component with props and children"
+                                    :fpc
+                                    "interface $1Props {\n  $2\n}\n\nconst $1: React.FC<React.PropsWithChildren<$1Props>> = ({ $3, children }) => ")
+                              (snip "React component with props and children"
+                                    :Fpc
+                                    "interface ${TM_FILENAME_BASE}Props {\n  $1\n}\n\nexport const ${TM_FILENAME_BASE}: React.FC<React.PropsWithChildren<${TM_FILENAME_BASE}Props>> = ({ $2, children }) => ")])
 
 (ls.filetype_extend :typescript [:javascript])
 (ls.filetype_extend :typescriptreact [:javascript])

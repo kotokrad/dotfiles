@@ -7,27 +7,16 @@
              nlb null-ls.builtins}})
 
 (null-ls.setup
-  {:sources [; (nlb.formatting.fixjson.with {:filetypes ["json" "jsonc"]})
-             ; (nlb.diagnostics.shellcheck)
-             nlb.formatting.prismaFmt
-             (nlb.formatting.prettierd.with {:filetypes ["javascript"
-                                                         "javascriptreact"
-                                                         "typescript"
-                                                         "typescriptreact"
-                                                         "vue"
-                                                         "svelte"
-                                                         "css"
-                                                         "scss"
-                                                         "html"
-                                                         "json"
-                                                         "jsonc"]})]})
+  {:sources [nlb.formatting.prismaFmt
+             nlb.formatting.prettierd]})
 
 (let [lsp (require :lspconfig)
       capabilities (cmp-nvim-lsp.default_capabilities)
       attach-handler (fn [client]
                        (util.noremap :n :K "<cmd>lua vim.lsp.buf.hover({ focusable = false })<cr>")
                        (util.noremap :n :<c-s> "<cmd>lua vim.lsp.buf.format({async = true})<cr>")
-                       (util.noremap :n :<localleader>a "<cmd>lua vim.lsp.buf.code_action()<cr>"))]
+                       (util.noremap :n :<localleader>a "<cmd>lua vim.lsp.buf.code_action()<cr>")
+                       (set capabilities.textDocument.completion.completionItem.snippetSupport true))]
                        ;; Use "CursorHold,CursorHoldI" for input mode
                        ; (nvim.ex.autocmd "CursorHold * lua vim.lsp.diagnostic.show_line_diagnostics({ focusable = false })"))]
                        ; (util.noremap :n :<localleader>r "<cmd>lua vim.lsp.buf.rename()<cr>"))]
@@ -40,13 +29,11 @@
                                       (set client.server_capabilities.documentFormattingProvider false))})
     (lsp.hls.setup {:capabilities capabilities
                     :on_attach attach-handler})
-    (lsp.rnix.setup {:capabilities capabilities
-                     :on_attach attach-handler})
     (lsp.rust_analyzer.setup {:capabilities capabilities
                               :on_attach attach-handler})
-    ; (lsp.elixirls.setup {:capabilities capabilities
-    ;                      :on_attach attach-handler
-    ;                      :cmd ["elixir-ls"]})
+    (lsp.emmet_ls.setup {:capabilities capabilities
+                         :on_attach attach-handler
+                         :filetypes ["css" "html" "javascript" "javascriptreact" "typescriptreact"]})
 
     (set vim.lsp.handlers.textDocument/publishDiagnostics
          (vim.lsp.with vim.lsp.diagnostic.on_publish_diagnostics
@@ -59,9 +46,9 @@
 
     (set vim.lsp.handlers.textDocument/codeAction lsputil-ca.code_action_handler)
 
-    (let [signs {:Error " "
-                 :Warn " "
-                 :Hint " "
+    (let [signs {:Error " "
+                 :Warn " "
+                 :Hint "💡"
                  :Info " "}]
       (each [diag-type icon (pairs signs)]
         (let [hl (.. "DiagnosticSign" diag-type)]

@@ -18,24 +18,18 @@ let
     nvim-web-devicons
     vim-buftabline
     vim-devicons
+    dressing-nvim                    # improve default UI
     # material-nvim
     # srcery-vim
     # tokyonight-nvim
-
-    # TODO
-    # indent-blankline-nvim
-    # nvim-ts-rainbow
-    # barbar-nvim
-    # sidebar-nvim
 
   # UTILITY
     aniseed                          # write configs in Fennel!
     bclose-vim                       # Bclose
     camelcasemotion                  # camelCase motions
     editorconfig-vim
-    fzf-vim                          # fuzzy finder
     lightspeed-nvim                  # highlights keys to move quickly
-    nvim-tree-lua
+    neo-tree-nvim
     plenary-nvim                     # lua utils
     tabular                          # align code verically (haskell etc)
     telescope-fzy-native-nvim        # FZY style sorter that is compiled
@@ -46,7 +40,7 @@ let
     vim-repeat                       # repeat plugin commands with (.)
     vim-sensible                     # sensible defaults
     vim-signature                    # display marks as signs
-    vim-surround                     # quickly edit surroundings (brackets, html tags, etc)
+    nvim-surround                    # add/change/delete surrounding delimiter pairs with ease. Written with ❤️ in Lua.
     which-key-nvim                   # spacemacs-like menu and key bindings
     # impatient-nvim                   # speed up loading lua modules
     # nvim-notify                      # used with `sniprun`
@@ -91,6 +85,10 @@ let
     vimwiki                          # notes
 
   # TODO: check out
+    # indent-blankline-nvim
+    # nvim-ts-rainbow
+    # barbar-nvim
+    # sidebar-nvim
     # ctrlsf-vim                     # edit file in place after searching with ripgrep
     # dhall-vim                      # Syntax highlighting for Dhall lang
     # fzf-hoogle                     # search hoogle with fzf
