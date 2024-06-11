@@ -19,10 +19,10 @@
 
 (ls.add_snippets :javascript [(snip "Simple console.log"
                                     :log
-                                    "console.log(\"👾\", \"${1:value}\")")
+                                    "console.log(\"🤓\", \"${1:value}\")")
                               (snip "Debug console.log"
                                     :clo
-                                    "console.log(\"👾\", \"${1:value} =>\", ${1:value})")
+                                    "console.log(\"🤓\", \"${1:value} =>\", ${1:value})")
                               (snip "Debug object with console.dir"
                                     :dir
                                     "console.dir(${1:value}, { depth: null })")

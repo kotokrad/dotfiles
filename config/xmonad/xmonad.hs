@@ -69,7 +69,9 @@ mySelectScreenshot = "maim -s -u | xclip -selection clipboard -t image/png -i"
 
 -- NOTE: big file in the clipboard causes Telegram to crash
 -- myScreenshot = "maim -u | xclip -selection clipboard -t image/png"
-myScreenshot = "maim -d 3 ~/\"$(date +'%Y-%m-%d-%H%M%S')_screenshot.png\" && notify-send Saved"
+myScreenshot = "maim ~/\"$(date +'%Y-%m-%d-%H%M%S')_screenshot.png\" && notify-send Saved"
+
+myDelayScreenshot = "maim -d 3 ~/\"$(date +'%Y-%m-%d-%H%M%S')_screenshot.png\" && notify-send Saved"
 
 myDrun = "rofi -show drun -matching fuzzy"
 
@@ -80,6 +82,8 @@ myClipboard = "rofi -modi 'clipboard:greenclip print' -show clipboard -run-comma
 myVimSessions = "vim-sessions"
 
 myNixConf = "nixconf"
+
+myAutorandr = "autorandr --change --skip-options gamma"
 
 myFileExplorer = "thunar"
 
@@ -115,8 +119,8 @@ myWorkspaces = [myWs1Web, myWs2Term, myWs3Code, myWs4Files, myWs5Chat, myWs6Misc
 --
 myWindowRules = composeAll
     [
-      className =? "firefox"                      --> viewShift myWs1Web
-    , className =? "librewolf"                    --> viewShift myWs1Web
+      className =? "firefox" <&&> isNormal        --> viewShift myWs1Web
+    , className =? "librewolf" <&&> isNormal      --> viewShift myWs1Web
     , className =? "qutebrowser"                  --> viewShift myWs1Web
     , className =? "org.wezfurlong.wezterm"       --> viewShift myWs2Term
     , className =? "nixconf"                      --> viewShift myWs3Code
@@ -124,24 +128,34 @@ myWindowRules = composeAll
     , className =? "Thunar"                       --> viewShift myWs4Files
     , className =? "Transmission-gtk"             --> viewShift myWs4Files
     , className =? "Steam"                        --> viewShift myWs4Files
-    , className =? "Chromium-browser"             --> viewShift myWs4Files
+    -- , className =? "Chromium-browser"             --> viewShift myWs4Files
+    , className =? "brave-browser" <&&> isNormal  --> viewShift myWs4Files
     , className =? "TelegramDesktop"              --> viewShift myWs5Chat
     , className =? "Slack"                        --> viewShift myWs5Chat
     , className =? "Pavucontrol"                  --> viewShift myWs6Misc
     , className =? ".blueman-manager-wrapped"     --> viewShift myWs6Misc
-    , className =? "Postman"                      --> viewShift myWs6Misc
+    -- , className =? "Postman"                      --> viewShift myWs6Misc
+    , title     =? "File Operation Progress"      --> doCenterFloat
     , title     =? "Steam - News"                 --> doCenterFloat
     , title     =? "Friends List"                 --> (doRectFloat $ W.RationalRect 1 1 (1/4) (1/2))
-    , className =? "File-roller"                  --> doCenterFloat
+    , className =? "file-roller"                  --> doCenterFloat
     , className =? "Mate-calc"                    --> doCenterFloat
+    , className =? "Godot_Engine"                 --> doCenterFloat
     , className =? "Nm-applet"                    --> doCenterFloat
+    , className =? "SimpleScreenRecorder"         --> doCenterFloat
     , className =? "feh"                          --> doFullFloat
     , resource  =? "desktop_window"               --> doIgnore
+    , isDialog                                    --> doCenterFloat
+    , isPopup                                     --> doCenterFloat
     , isFullscreen                                --> (doF W.focusDown <+> doFullFloat)
     ]
   where
     viewShift :: WorkspaceId -> ManageHook
     viewShift = doF . liftM2 (.) W.greedyView W.shift . marshall (S 0)
+    isNormal :: Query Bool
+    isNormal = isInProperty "_NET_WM_WINDOW_TYPE" "_NET_WM_WINDOW_TYPE_NORMAL"
+    isPopup :: Query Bool
+    isPopup = isInProperty "WM_WINDOW_ROLE" "pop-up"
 
 
 ------------------------------------------------------------------------
@@ -231,6 +245,10 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
   , ((modMask, xK_p),
      spawn myNixConf)
 
+  -- apply autorandr config
+  , ((modMask, xK_o),
+     spawn myAutorandr)
+
   -- Spawn the file explorer
   , ((modMask, xK_e),
      spawn myFileExplorer)
@@ -242,6 +260,14 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
   -- Take a full screenshot
   , ((controlMask, xK_Print),
      spawn myScreenshot)
+
+  -- Take a full screenshot with delay
+  , ((modMask, xK_Print),
+     spawn myDelayScreenshot)
+
+  -- Test
+  -- , ((0, xF86XK_Calculator),
+  -- spawn myTestApp)
 
   -- Open Terminal scratchpad
   , ((modMask, xK_grave),
@@ -375,6 +401,12 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
   , ((modMask, xK_period),
      sendMessage (IncMasterN (-1)))
 
+  -- resizing the master/slave ratio
+  , ((modMask .|. controlMask, xK_h),
+     sendMessage Shrink) -- %! Shrink the master area
+  , ((modMask .|. controlMask, xK_l),
+     sendMessage Expand) -- %! Expand the master area
+
   -- Quit xmonad.
   , ((modMask .|. shiftMask, xK_q),
      io exitSuccess)
@@ -402,7 +434,7 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
   -- mod-{w,e,r} %! Switch to physical/Xinerama screens 1, 2, or 3
   -- mod-shift-{w,e,r} %! Move client to screen 1, 2, or 3
   [((m .|. modMask, key), screenWorkspace sc >>= flip whenJust (windows . f))
-      | (key, sc) <- zip [xK_s, xK_d] [0..]
+      | (key, sc) <- zip [xK_d, xK_s] [0..]
       , (f, m) <- [(W.view, 0), (W.shift, shiftMask)]]
 
 
@@ -443,25 +475,17 @@ myStartupHook = do
 --
 myScratchpads =
   [ NS "terminal"
-       (run [bottomLinePrompt, printMemo] "wezterm start --class sp-terminal -- zsh")
+       "wezterm start --class sp-terminal -- fish"
        (className =? "sp-terminal")
        quakeFloat
   , NS "notes"
        "wezterm start --class sp-notes --cwd ~/notes -- nvim scratchpad.md"
        (className =? "sp-notes")
        centerFloat
-  , NS "music" -- TODO use ncmpcpp?
-       ("wezterm start --class sp-music --cwd ~/music -- " ++ lofi)
-       (className =? "sp-music")
-       centerFloat
   ]
     where
       centerFloat = customFloating $ W.RationalRect (1/6) (1/6) (2/3) (2/3)
       quakeFloat = customFloating $ W.RationalRect 0 0 1 (1/3)
-      lofi = "mpv --no-video --volume=70 https://youtu.be/jfKfPfyJRdk"
-      run commands term = "RUN=\"" ++ L.intercalate " && " commands ++ "\" " ++ term
-      bottomLinePrompt = "printf '\\n%.0s' {1..100}"
-      printMemo = "bat -p ~/notes/memo.md"
 
 
 ------------------------------------------------------------------------

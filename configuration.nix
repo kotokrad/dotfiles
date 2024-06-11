@@ -7,7 +7,7 @@
 let
   xtrlock-pam-python3 = pkgs.xtrlock-pam.overrideAttrs (
     old: {
-      buildInputs = with pkgs; [ python38 pam xorg.libX11 ];
+      buildInputs = with pkgs; [ python39 pam xorg.libX11 ];
     }
   );
 in
@@ -17,7 +17,7 @@ in
       ./hardware-configuration.nix
     ];
 
-  boot.kernelParams = ["amdgpu.backlight=0" "acpi_backlight=none"];
+  # boot.kernelParams = ["amdgpu.backlight=0" "acpi_backlight=none"];
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.extraModprobeConfig = ''
@@ -41,19 +41,21 @@ in
     options = [ "loop" ];
   };
 
-#   powerManagement = {
-#     enable = true;
-#     resumeCommands = ''
-#       betterlockscreen -l
-#     '';
-#   };
+  #   powerManagement = {
+  #     enable = true;
+  #     resumeCommands = ''
+  #       betterlockscreen -l
+  #     '';
+  #   };
 
   nixpkgs.config.allowUnfree = true;
+  nixpkgs.hostPlatform = "x86_64-linux";
 
   networking.hostName = "nixos";
   networking.networkmanager.enable = true;
   networking.useDHCP = false;
   networking.interfaces.wlp1s0.useDHCP = true;
+  networking.nftables.enable = true;
   # Strict reverse path filtering breaks Tailscale exit node use and some subnet routing setups
   networking.firewall.checkReversePath = "loose";
   systemd.services.NetworkManager-wait-online.enable = false;
@@ -90,16 +92,17 @@ in
     gnome.gnome-keyring.enable = true;
     upower.enable = true;
     blueman.enable = true;
-    illum.enable = true;                 # brightness buttons
+    illum.enable = true; # brightness buttons
     gvfs.enable = true;
     tumbler.enable = true;
     # opensnitch.enable = true;
     tailscale.enable = true;
     usbmuxd.enable = true;
     avahi.enable = true;
+    mullvad-vpn.enable = true;
 
     syncthing = {
-      enable = true;
+      enable = false;
       dataDir = "/home/kotokrad";
       user = "kotokrad";
     };
@@ -118,6 +121,19 @@ in
       SUBSYSTEM=="pci", KERNEL=="0000:00:08.1", ATTR{power/wakeup}="disabled"
       SUBSYSTEM=="pci", KERNEL=="0000:03:00.3", ATTR{power/wakeup}="disabled"
       SUBSYSTEM=="pci", KERNEL=="0000:03:00.4", ATTR{power/wakeup}="disabled"
+
+      # Access PS4 controller hid stream as non-root user
+      SUBSYSTEM=="input", GROUP="input", MODE="0666"
+      SUBSYSTEM=="usb", ATTRS{idVendor}=="054c", ATTRS{idProduct}=="0268", MODE:="666", GROUP="plugdev"
+      KERNEL=="hidraw*", SUBSYSTEM=="hidraw", MODE="0664", GROUP="plugdev"
+
+      SUBSYSTEM=="input", GROUP="input", MODE="0666"
+      SUBSYSTEM=="usb", ATTRS{idVendor}=="054c", ATTRS{idProduct}=="05c4", MODE:="666", GROUP="plugdev"
+      KERNEL=="hidraw*", SUBSYSTEM=="hidraw", MODE="0664", GROUP="plugdev"
+
+      SUBSYSTEM=="input", GROUP="input", MODE="0666"
+      SUBSYSTEM=="usb", ATTRS{idVendor}=="054c", ATTRS{idProduct}=="09cc", MODE:="666", GROUP="plugdev"
+      KERNEL=="hidraw*", SUBSYSTEM=="hidraw", MODE="0664", GROUP="plugdev"
     '';
 
     dbus.enable = true;
@@ -127,29 +143,32 @@ in
       xfce.xfconf
     ];
 
-#     tlp = {
-#       # advanced power management
-#       enable = true;
-#       settings = {
-#         # Do not suspend USB devices
-#         # USB_AUTOSUSPEND = 0;
-#         USB_EXCLUDE_BTUSB = 1;
-#         RADEON_DPM_PERF_LEVEL_ON_BAT = "low";
-#       };
-#     };
+    #     tlp = {
+    #       # advanced power management
+    #       enable = true;
+    #       settings = {
+    #         # Do not suspend USB devices
+    #         # USB_AUTOSUSPEND = 0;
+    #         USB_EXCLUDE_BTUSB = 1;
+    #         RADEON_DPM_PERF_LEVEL_ON_BAT = "low";
+    #       };
+    #     };
+    libinput.enable = true;
+
+    displayManager.autoLogin.enable = true;
+    displayManager.autoLogin.user = "kotokrad";
+    displayManager.defaultSession = "none+fake";
 
     xserver = {
       enable = true;
       dpi = 180;
-      layout = "us,ru";
-      xkbOptions = "caps:escape,grp:alt_shift_toggle";
-      libinput.enable = true;
+      xkb = {
+        options = "caps:escape,grp:alt_shift_toggle";
+        layout = "us,ru";
+      };
       updateDbusEnvironment = true;
 
       displayManager.lightdm.enable = true;
-      displayManager.autoLogin.enable = true;
-      displayManager.autoLogin.user = "kotokrad";
-      displayManager.defaultSession = "none+fake";
       displayManager.session =
         let fakeSession = {
           manage = "window";
@@ -195,18 +214,24 @@ in
   sound.enable = true;
 
   hardware = {
+    cpu.amd.updateMicrocode = config.hardware.enableRedistributableFirmware;
+
     bluetooth.enable = true;
     opengl.enable = true;
     opengl.driSupport = true;
     opengl.driSupport32Bit = true; # Needed for steam
-    opengl.extraPackages = with pkgs; [ amdvlk ];
-    opengl.extraPackages32 = with pkgs; [ driversi686Linux.amdvlk ];
+    opengl.extraPackages = with pkgs; [
+      rocm-opencl-icd
+      rocm-opencl-runtime
+    ];
+    # opengl.extraPackages = with pkgs; [ amdvlk ];
+    # opengl.extraPackages32 = with pkgs; [ driversi686Linux.amdvlk ];
     pulseaudio.enable = true;
     pulseaudio.support32Bit = true;
   };
 
   nix = {
-    package = pkgs.nixUnstable;
+    package = pkgs.nixVersions.latest;
     settings.trusted-users = [ "root" "kotokrad" ];
     extraOptions = ''
       experimental-features = nix-command flakes
@@ -214,7 +239,7 @@ in
   };
 
   # Fonts
-  fonts.fonts = with pkgs; [
+  fonts.packages = with pkgs; [
     corefonts
     font-awesome
     material-design-icons
@@ -263,7 +288,7 @@ in
       "lp"
       "syncthing"
     ];
-    shell = pkgs.zsh;
+    shell = pkgs.fish;
   };
 
   # Some programs need SUID wrappers, can be configured further or are
@@ -274,7 +299,7 @@ in
   #   enableSSHSupport = true;
   # };
 
-  programs.zsh.enable = true;
+  programs.fish.enable = true;
   programs.ssh.startAgent = true;
   programs.dconf.enable = true;
   programs.steam.enable = true;

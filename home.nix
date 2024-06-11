@@ -4,19 +4,19 @@
 let
   xtrlock-pam-python3 = pkgs.xtrlock-pam.overrideAttrs (
     old: {
-      buildInputs = with pkgs; [ python38 pam xorg.libX11 ];
+      buildInputs = with pkgs; [ python39 pam xorg.libX11 ];
     }
   );
   defaultPkgs = with pkgs; [
   # Applications
     chromium
+    brave
     tdesktop                    # telegram messaging client
     transmission-gtk
     vlc                         # media player
     simplescreenrecorder
     arandr                      # simple GUI for xrandr
     asciinema                   # record the terminal
-    postman                     # rest client
     simplescreenrecorder
     lxappearance
     mate.mate-calc
@@ -32,6 +32,20 @@ let
     wireshark
     # opensnitch-ui
     obsidian
+    font-manager
+    prusa-slicer
+    orca-slicer
+    arduino
+    openscad-unstable
+    upscayl
+    mullvad-vpn
+    rpi-imager
+
+  # Games
+    # cemu
+    playonlinux
+    wineWowPackages.staging
+    winetricks
 
   # Utility
     fd                          # "find" for files
@@ -69,6 +83,13 @@ let
     ffmpeg
     xcolor                      # color picker
     lsof
+    bash
+    gnome.gnome-disk-utility
+    gping
+    file
+    ventoy                      # make bootable dvd-usb
+    xsel
+    bind
 
   # TEMP
   # programming languages course homework
@@ -85,27 +106,28 @@ let
     cachix                      # nix caching
     nix-doc                     # nix documentation search tool
     nix-index                   # files database for nixpkgs
-    rnix-lsp                    # nix lsp
     # nix-tree                    # visualize nix dependencies
 
   # Dev
     gnumake
-    # gcc
+    gcc
     # binutils-unwrapped          # NOTE: fixes the `ar` error required by cabal
     openssl
-    pkgconfig
+    pkg-config
     tree-sitter
     python3
+    # python310Packages.pip
     rustup
     pgweb                       # PostgreSQL client
     elixir
     elixir_ls
+    godot3
+    # godot_4
+    pixelorama
 
   # node:
     nodejs
     yarn
-    # nodePackages.typescript                 # NOTE: v4.4.4 installed globally for now.
-    # nodePackages.typescript-language-server # NOTE: v0.8.1 installed globally for now
     nodePackages.typescript
     nodePackages.typescript-language-server
     nodePackages.prettier
@@ -130,6 +152,7 @@ let
   # Misc
     gnome.adwaita-icon-theme
     qmk-udev-rules              # for QMK flashing
+    libusb1
     # audacious                 # simple music player
     # bottom                    # alternative to htop & ytop
     # calibre                   # e-book reader
@@ -140,7 +163,7 @@ let
     # duf                       # disk usage/free utility
     # element-desktop           # a feature-rich client for Matrix.org
     # exa                       # a better `ls`
-    # gimp                      # gnu image manipulation program
+    gimp                      # gnu image manipulation program
     # hyperfine                 # command-line benchmarking tool
     # libreoffice               # office suite
     # ngrok-2                   # secure tunneling to localhost
@@ -174,6 +197,7 @@ let
     font-awesome          # awesome fonts
     material-design-icons # fonts with glyphs
     open-sans
+    vistafonts            # consolas
   ];
 
   xmonadPkgs = with pkgs; [
@@ -185,6 +209,8 @@ let
     xorg.xmodmap           # keymaps modifier
     xorg.xrandr            # display manager (X Resize and Rotate protocol)
     xorg.xev
+    gtk-engine-murrine
+    gtk_engines
   ];
 
   overrides = with pkgs; [
@@ -234,29 +260,28 @@ in
       KEYTIMEOUT = 1;
     };
     shellAliases = {
-      switch = "sudo nixos-rebuild switch --flake '/home/kotokrad/nixos-config#'";
+      nix-switch = ''
+        rm -f ~/.config/mimeapps.list || true
+        sudo nixos-rebuild switch --flake '/home/kotokrad/nixos-config#'
+        ${pkgs.neovim}/bin/nvim --headless -c "lua require(\"aniseed.env\").init()" -c q
+        '';
       gs = "git status";
       gh = "git hist";
-      ww = "vim -c VimwikiIndex";
-      lofi = "mpv --no-video --volume=50 https://youtu.be/5qap5aO4i9A";
+      lofi = "mpv --no-video --volume=50 https://youtu.be/jfKfPfyJRdk";
+      sync-watch = "watch -d grep -e Dirty: -e Writeback: /proc/meminfo";
       # dump keystrokes https://web.archive.org/web/20191220190018/https://www.drbunsen.org/vim-croquet/
-      vim = ''nvim -w ~/.vimlog "$@"'';
-      ssh = ''TERM=xterm-256color ssh'';
+      vim = ''nvim -w ~/.vimlog "$argv"'';
+      ssh = ''TERM=xterm-256color ${pkgs.openssh}/bin/ssh'';
       mkdir = "mkdir -p";
     };
   };
 
   programs = {
-    zsh.enable = true;
-    zsh.initExtra = ''
-      any-nix-shell zsh --info-right | source /dev/stdin
-      bindkey -v
-      bindkey '^[[7~' beginning-of-line
-      bindkey '^[[8~' end-of-line
-      eval "$RUN"
+    fish.enable = true;
+    fish.interactiveShellInit = ''
+      any-nix-shell fish --info-right | source
+      set -U fish_greeting ""
     '';
-    zsh.enableSyntaxHighlighting = true;
-    zsh.defaultKeymap = "viins";
 
     git.enable = true;
     git.aliases = {
@@ -269,7 +294,7 @@ in
 
     fzf = {
       enable = true;
-      enableZshIntegration = true;
+      enableFishIntegration = true;
       defaultCommand = ''
         ag --follow -g \"\"
       '';
@@ -277,19 +302,49 @@ in
 
     starship = {
       enable = true;
-      enableZshIntegration = true;
+      enableFishIntegration = true;
 
       settings = {
+        scan_timeout = 10;
+        command_timeout = 100;
         character = {
           success_symbol = "[λ](bold green)";
           error_symbol = "[λ](bold red)";
           vicmd_symbol = "[λ](bold yellow)";
         };
+
+        # format = ''
+        #   $username$hostname$directory$git_branch$cmd_duration$line_break$character
+        # '';
+        directory.style = "blue";
+        git_branch = {
+          format = "[$branch]($style)";
+          style = "bright-black";
+        };
+        git_status = {
+          format = "[[(*$conflicted$untracked$modified$staged$renamed$deleted)](218) ($ahead_behind$stashed)]($style)";
+          style = "cyan";
+          conflicted = "​";
+          untracked = "​";
+          modified = "​";
+          staged = "​";
+          renamed = "​";
+          deleted = "​";
+          stashed = "≡";
+        };
+        git_state = {
+          format = "\([$state( $progress_current/$progress_total)]($style)\) ";
+          style = "bright-black";
+        };
+        cmd_duration = {
+          format = "[$duration]($style) ";
+          style = "yellow";
+        };
       };
     };
 
-    vscode.enable = true;
-    vscode.package = pkgs.vscode-fhs;
+    # vscode.enable = true;
+    # vscode.package = pkgs.vscode-fhs;
 
     bat.enable = true;
     bat.config.theme = "gruvbox-dark";
@@ -320,7 +375,7 @@ in
 
   services.network-manager-applet.enable = true;
   services.unclutter.enable = true;
-  services.syncthing.enable = true;
+  services.syncthing.enable = false;
   # services.syncthing.tray.enable = true;
   services.gammastep = {
     enable = true;
@@ -376,9 +431,9 @@ in
       "image/jpeg" = "org.xfce.ristretto.desktop";
       "image/png" = "org.xfce.ristretto.desktop";
       "image/svg+xml" = ["org.inkscape.Inkscape.desktop" "org.qutebrowser.qutebrowser.desktop"];
+      # "font/otf" = "org.gnome.FontViewer.desktop";
       "x-scheme-handler/tg" = "telegramdesktop.desktop";
       "x-scheme-handler/magnet" = "transmission-gtk.desktop";
-      "x-scheme-handler/postman" = "Postman.desktop";
     };
     associations.added = {
       "video/mp4" = "vlc.desktop";
