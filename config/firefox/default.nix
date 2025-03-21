@@ -22,8 +22,6 @@ in
     profiles.default.userChrome = userChrome;
   };
 
-  home.packages = [ librewolf ];
-
   xdg.desktopEntries = {
     librewolf-private = {
       name = "Firefox Private";
