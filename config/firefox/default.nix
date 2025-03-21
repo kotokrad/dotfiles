@@ -1,12 +1,12 @@
 { pkgs, ... }:
 
 let
-  librewolf = pkgs.librewolf.override {
-    desktopName = "Firefox";
-  };
-  firefox-work = pkgs.firefox.override {
-    desktopName = "Firefox Work";
-  };
+  librewolf = pkgs.librewolf.overrideAttrs (finalAttrs: previousAttrs: {
+    desktopItem = previousAttrs.desktopItem.override { desktopName = "Firefox"; };
+  });
+  firefox-work = pkgs.firefox.overrideAttrs (finalAttrs: previousAttrs: {
+    desktopItem = previousAttrs.desktopItem.override { desktopName = "Firefox Work"; };
+  });
   userChrome = builtins.readFile ./userChrome.css;
 in
 {
@@ -16,20 +16,13 @@ in
     profiles.default.userChrome = userChrome;
   };
 
+  programs.librewolf = {
+    enable = true;
+    package = librewolf;
+    profiles.default.userChrome = userChrome;
+  };
+
   home.packages = [ librewolf ];
-
-  home.file.".librewolf/profiles.ini".text = ''
-    [Profile0]
-    Name=default
-    IsRelative=1
-    Path=default
-    Default=1
-
-    [General]
-    StartWithLastProfile=1
-    Version=2
-  '';
-  home.file.".librewolf/default/chrome/userChrome.css".text = userChrome;
 
   xdg.desktopEntries = {
     librewolf-private = {
