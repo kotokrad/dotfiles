@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 
 let
   librewolf = pkgs.librewolf.overrideAttrs (finalAttrs: previousAttrs: {
@@ -13,7 +13,8 @@ in
   programs.firefox = {
     enable = true;
     package = firefox-work;
-    profiles.default.userChrome = userChrome;
+    # profiles.default.userChrome = userChrome;
+    # configPath = "${config.xdg.configHome}/mozilla/firefox";
   };
 
   programs.librewolf = {

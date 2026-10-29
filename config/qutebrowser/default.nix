@@ -1,7 +1,6 @@
 { pkgs, ... }:
 
 let
-  gruvboxTheme = import ./gruvbox.nix;
   settings = import ./settings.nix;
 in
 {
@@ -11,7 +10,7 @@ in
     loadAutoconfig = true;
 
     aliases = {
-      ytdl = ''spawn -v -m zsh -c 'cd ~/video/youtube && youtube-dl \"$@\"' _ {url}'';
+      ytdl = ''spawn -v -m sh -c 'cd ~/video/youtube && yt-dlp \"$@\"' _ {url}'';
     };
 
     keyBindings = {
@@ -24,7 +23,7 @@ in
       };
     };
 
-    settings = settings // gruvboxTheme;
+    settings = settings;
 
     extraConfig = ''
       c.content.headers.custom = {"accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"}

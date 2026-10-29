@@ -4,22 +4,21 @@
 
 { config, pkgs, lib, inputs, ... }:
 
-let
-  xtrlock-pam-python3 = pkgs.xtrlock-pam.overrideAttrs (
-    old: {
-      buildInputs = with pkgs; [ python39 pam xorg.libX11 ];
-    }
-  );
-in
 {
   imports =
     [
       ./hardware-configuration.nix
+      ./spacenavd.nix
+      # ./opensnitch.nix
     ];
 
   # boot.kernelParams = ["amdgpu.backlight=0" "acpi_backlight=none"];
+  boot.kernel.sysctl = {
+    "kernel.dmesg_restrict" = false;
+  };
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
+  boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
   boot.extraModprobeConfig = ''
     # Function/media keys:
     #   0: Function keys only.
@@ -28,39 +27,24 @@ in
     options hid_apple fnmode=2
   '';
 
-  # Dedicated file system for Docker to prevent btrfs corruption
-  # https://gist.github.com/hopeseekr/cd2058e71d01deca5bae9f4e5a555440
-  # cd /media
-  # touch docker-volume.img
-  # chattr +C docker-volume.img
-  # fallocate -l 20G docker-volume.img
-  # mkfs.ext4 docker-volume.img
-  fileSystems."/var/lib/docker" = {
-    device = "/media/docker-volume.img";
-    fsType = "ext4";
-    options = [ "loop" ];
-  };
-
-  #   powerManagement = {
-  #     enable = true;
-  #     resumeCommands = ''
-  #       betterlockscreen -l
-  #     '';
-  #   };
-
   nixpkgs.config.allowUnfree = true;
   nixpkgs.hostPlatform = "x86_64-linux";
 
   networking.hostName = "nixos";
+  networking.extraHosts = ''
+    127.0.0.1 local.test.com
+    192.168.0.142 homeassistant.local
+  '';
   networking.networkmanager.enable = true;
-  networking.useDHCP = false;
-  networking.interfaces.wlp1s0.useDHCP = true;
   networking.nftables.enable = true;
   # Strict reverse path filtering breaks Tailscale exit node use and some subnet routing setups
   networking.firewall.checkReversePath = "loose";
   systemd.services.NetworkManager-wait-online.enable = false;
 
-  virtualisation.docker.enable = true;
+  virtualisation.podman = {
+    enable = true;
+    dockerCompat = true;
+  };
 
   time.timeZone = "Asia/Bangkok";
   i18n.defaultLocale = "en_US.UTF-8";
@@ -73,47 +57,73 @@ in
 
     # HiDPI
     GDK_SCALE = "2";
-    GDK_DPI_SCALE = "0.5";
+    GDK_DPI_SCALE = "1"; # changed 0.5 to 1 to fix firefox in wayland
     _JAVA_OPTIONS = "-Dsun.java2d.uiScale=2";
-    XCURSOR_SIZE = "86";
+    # XCURSOR_SIZE = "86"; # disabled for stylix
   };
 
   environment.systemPackages = with pkgs; [
     coreutils
     wget
     git
-    xtrlock-pam-python3
     ntfs3g
+    brightnessctl
+    spnavcfg
+    android-tools
+    docker-compose
   ];
 
-  location.provider = "geoclue2";
+  xdg = {
+    autostart.enable = true;
+    portal = {
+      enable = true;
+      config.common = {
+        default = [ "gtk" ];
+        "org.freedesktop.impl.portal.Secret" = [ "gnome-keyring" ];
+      };
+    };
+  };
+
+  # [pipewire] rtkit is optional but recommended
+  security.rtkit.enable = true;
 
   services = {
     gnome.gnome-keyring.enable = true;
+    gnome.gcr-ssh-agent.enable = false; # it conflicts with programs.ssh.startAgent
     upower.enable = true;
+    power-profiles-daemon.enable = true;
     blueman.enable = true;
-    illum.enable = true; # brightness buttons
     gvfs.enable = true;
     tumbler.enable = true;
-    # opensnitch.enable = true;
     tailscale.enable = true;
     usbmuxd.enable = true;
-    avahi.enable = true;
     mullvad-vpn.enable = true;
+    flatpak.enable = true;
+    playerctld.enable = true;
 
-    syncthing = {
-      enable = false;
-      dataDir = "/home/kotokrad";
-      user = "kotokrad";
+    avahi = {
+      enable = true;
+      nssmdns4 = true;
+      openFirewall = true;
     };
 
-    mpd.enable = true;
-    mpd.musicDirectory = "/home/kotokrad/music";
+    printing = {
+      enable = true;
+      drivers = with pkgs; [
+        gutenprint
+        cnijfilter2
+        hplipWithPlugin
+      ];
+    };
 
-    logind.extraConfig = ''
-      # don’t shutdown when power button is short-pressed
-      HandlePowerKey=ignore
-    '';
+    pipewire = {
+      enable = true;
+      alsa.enable = true;
+      alsa.support32Bit = true;
+      pulse.enable = true;
+    };
+
+    logind.settings.Login.HandlePowerKey = "suspend";
 
     udev.extraRules = ''
       # Disable wakeup signals to avoid resume getting triggered
@@ -122,112 +132,63 @@ in
       SUBSYSTEM=="pci", KERNEL=="0000:03:00.3", ATTR{power/wakeup}="disabled"
       SUBSYSTEM=="pci", KERNEL=="0000:03:00.4", ATTR{power/wakeup}="disabled"
 
-      # Access PS4 controller hid stream as non-root user
-      SUBSYSTEM=="input", GROUP="input", MODE="0666"
-      SUBSYSTEM=="usb", ATTRS{idVendor}=="054c", ATTRS{idProduct}=="0268", MODE:="666", GROUP="plugdev"
-      KERNEL=="hidraw*", SUBSYSTEM=="hidraw", MODE="0664", GROUP="plugdev"
+      # QMK Vial
+      KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{serial}=="*vial:f64c2b3c*", MODE="0660", GROUP="users", TAG+="uaccess", TAG+="udev-acl"
 
-      SUBSYSTEM=="input", GROUP="input", MODE="0666"
-      SUBSYSTEM=="usb", ATTRS{idVendor}=="054c", ATTRS{idProduct}=="05c4", MODE:="666", GROUP="plugdev"
-      KERNEL=="hidraw*", SUBSYSTEM=="hidraw", MODE="0664", GROUP="plugdev"
+      # Wireshark usbmon
+      SUBSYSTEM=="usbmon", GROUP="wireshark", MODE="0640"
 
-      SUBSYSTEM=="input", GROUP="input", MODE="0666"
-      SUBSYSTEM=="usb", ATTRS{idVendor}=="054c", ATTRS{idProduct}=="09cc", MODE:="666", GROUP="plugdev"
-      KERNEL=="hidraw*", SUBSYSTEM=="hidraw", MODE="0664", GROUP="plugdev"
+      # ST-Link with Blackmagic FW
+      SUBSYSTEM=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="3748", ACTION=="add", RUN+="${pkgs.stlink-tool}/bin/stlink-tool"
     '';
 
-    dbus.enable = true;
-    dbus.packages = with pkgs; [
-      gcr
-      dconf
-      xfce.xfconf
-    ];
-
-    #     tlp = {
-    #       # advanced power management
-    #       enable = true;
-    #       settings = {
-    #         # Do not suspend USB devices
-    #         # USB_AUTOSUSPEND = 0;
-    #         USB_EXCLUDE_BTUSB = 1;
-    #         RADEON_DPM_PERF_LEVEL_ON_BAT = "low";
-    #       };
-    #     };
     libinput.enable = true;
 
-    displayManager.autoLogin.enable = true;
-    displayManager.autoLogin.user = "kotokrad";
-    displayManager.defaultSession = "none+fake";
+    displayManager.regreet.enable = true;
+    greetd.settings.initial_session = {
+      user = "kotokrad";
+      command = lib.getExe' config.programs.mango.package "mango";
+    };
 
-    xserver = {
+    keyd = {
       enable = true;
-      dpi = 180;
-      xkb = {
-        options = "caps:escape,grp:alt_shift_toggle";
-        layout = "us,ru";
-      };
-      updateDbusEnvironment = true;
-
-      displayManager.lightdm.enable = true;
-      displayManager.session =
-        let fakeSession = {
-          manage = "window";
-          name = "fake";
-          start = "";
+      keyboards.default = {
+        ids = [ "*" ];
+        settings = {
+          main.rightalt = "layer(ralt)";
+          "ralt:C" = {
+            "4" = "3";
+            r = "e";
+            f = "d";
+            v = "c";
+          };
         };
-        in [ fakeSession ];
-
-      # xset r rate 250 55
-      # 18 = 55
-      # 17 = 58
-      # 16 = 62
-      # 10 = 100
-      autoRepeatInterval = 18;
-      autoRepeatDelay = 250;
-
-      videoDrivers = [ "amdgpu" ];
-      deviceSection = ''
-        Option "VariableRefresh" "true"
-      '';
-
+      };
     };
-
-    postgresql = {
-      enable = true;
-      package = pkgs.postgresql_14;
-      extraPlugins = with pkgs.postgresql_14.pkgs; [ postgis ];
-      enableTCPIP = false;
-      identMap = ''
-        postgres kotokrad postgres
-      '';
-      authentication = lib.mkForce ''
-        # Generated file; do not edit!
-        # TYPE  DATABASE        USER            ADDRESS                 METHOD
-        local   all             all                                     trust
-        host    all             all             127.0.0.1/32            trust
-        host    all             all             ::1/128                 trust
-      '';
-    };
-
   };
-
-  sound.enable = true;
 
   hardware = {
     cpu.amd.updateMicrocode = config.hardware.enableRedistributableFirmware;
 
-    bluetooth.enable = true;
-    opengl.enable = true;
-    opengl.driSupport = true;
-    opengl.driSupport32Bit = true; # Needed for steam
-    opengl.extraPackages = with pkgs; [
-      rocm-opencl-icd
-      rocm-opencl-runtime
-    ];
-    # opengl.extraPackages = with pkgs; [ amdvlk ];
-    # opengl.extraPackages32 = with pkgs; [ driversi686Linux.amdvlk ];
-    pulseaudio.enable = true;
-    pulseaudio.support32Bit = true;
+    bluetooth = {
+      enable = true;
+      settings = {
+        General = {
+          Enable = "Source,Sink,Media,Socket";
+        };
+        Policy = {
+          AutoEnable = true;
+          ReconnectAttempts = 1;
+          ReconnectIntervals = "1,2,4,8";
+        };
+      };
+    };
+    graphics.enable = true;
+    keyboard.qmk.enable = true;
+
+    # scanner
+    sane.enable = true;
+    sane.extraBackends = [ pkgs.hplipWithPlugin ];
   };
 
   nix = {
@@ -243,7 +204,10 @@ in
     corefonts
     font-awesome
     material-design-icons
-    (nerdfonts.override { fonts = [ "FiraCode" "JetBrainsMono" "FantasqueSansMono" ]; })
+    nerd-fonts.fira-code
+    nerd-fonts.jetbrains-mono
+    nerd-fonts.fantasque-sans-mono
+    nerd-fonts.iosevka
     # japanese fonts:
     ipafont
     kochi-substitute
@@ -283,32 +247,62 @@ in
       "networkmanager"
       "input"
       "audio"
-      "docker"
       "adbusers"
+      "scanner"
       "lp"
-      "syncthing"
+      "wireshark"
     ];
     shell = pkgs.fish;
   };
 
-  # Some programs need SUID wrappers, can be configured further or are
-  # started in user sessions.
-  # programs.mtr.enable = true;
-  # programs.gnupg.agent = {
-  #   enable = true;
-  #   enableSSHSupport = true;
-  # };
+  programs.appimage.enable = true;
+  programs.appimage.binfmt = true;
+
+  programs.nh = {
+    enable = true;
+    clean.enable = true;
+    clean.extraArgs = "--keep-since 7d --keep 3";
+    flake = "/home/kotokrad/nixos-config";
+  };
+
+  programs.thunar = {
+    enable = true;
+    plugins = with pkgs; [
+      thunar-archive-plugin
+      thunar-media-tags-plugin
+      thunar-volman
+    ];
+  };
 
   programs.fish.enable = true;
   programs.ssh.startAgent = true;
   programs.dconf.enable = true;
+  programs.xfconf.enable = true;
+  programs.seahorse.enable = true;
   programs.steam.enable = true;
-  programs.adb.enable = true;
-  programs.thefuck.enable = true;
-  programs.xss-lock.enable = true;
-  programs.xss-lock.lockerCommand = "${xtrlock-pam-python3}/bin/xtrlock-pam";
+  programs.pay-respects.enable = true;
   programs.wireshark.enable = true;
   programs.nix-ld.enable = true;
+  programs.nix-index-database.comma.enable = true;
+
+  # CVE-2026-111497 stopgap, remove once brotli 1.2.1 is in nixos-unstable
+  system.replaceDependencies.replacements =
+    let
+      fix = b: b.overrideAttrs (old: {
+        patches = (old.patches or [ ]) ++ [
+          (pkgs.fetchurl {
+            url = "https://github.com/google/brotli/commit/0ed4268a4401abcb4472096340477cf4af7d1a2b.patch?full_index=1";
+            hash = "sha256-1vliUJAAIj3vcGKVgim9CEV+XgMuftDR2U+3kLBUsfw=";
+          })
+        ];
+      });
+      new = fix pkgs.brotli;
+      new32 = fix pkgs.pkgsi686Linux.brotli;
+    in [
+      { oldDependency = pkgs.brotli.out; newDependency = new.out; }
+      { oldDependency = pkgs.brotli.lib; newDependency = new.lib; }
+      { oldDependency = pkgs.pkgsi686Linux.brotli.lib; newDependency = new32.lib; }
+    ];
 
 
   # This value determines the NixOS release from which the default
