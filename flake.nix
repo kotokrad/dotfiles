@@ -48,5 +48,14 @@
         nix-index-database.nixosModules.default
       ];
     };
+
+    homeConfigurations.macbook = home-manager.lib.homeManagerConfiguration {
+      pkgs = nixpkgs.legacyPackages.aarch64-linux;
+      extraSpecialArgs = { inherit inputs; };
+      modules = [
+        stylix.homeModules.stylix
+        ./macbook.nix
+      ];
+    };
   };
 }
