@@ -90,19 +90,52 @@ PanelWindow {
         // Media {}
         Privacy {}
 
-        Claude {
+        // Usage {
+        //     bar: bar
+        //     source: CodexUsage
+        // }
+
+        Usage {
             bar: bar
+            source: ClaudeUsage
         }
 
         Island {
             id: vpn
-            readonly property bool off: Vpn.active === ""
+            readonly property string names: [Vpn.mullvad ? "mullvad" : "", Vpn.tailscale ? "ts" : ""].filter(s => s).join(" + ")
             hoverable: true
-            color: off ? (hovered ? Qt.lighter(Ui.yellow, 1.15) : Ui.yellow) : (hovered ? Ui.bg2 : Ui.bg0)
-            onClicked: Vpn.switcherOpen = true
+            color: names === "" ? (hovered ? Qt.lighter(Ui.yellow, 1.15) : Ui.yellow) : hovered ? Ui.bg2 : panelOpen ? Ui.bg1 : Ui.bg0
+            onClicked: vpnMenu.visible = !vpnMenu.visible
             Txt {
-                text: "\u{f0582} " + (vpn.off ? "disconnected" : Vpn.active)
-                color: vpn.off ? Ui.bg : Ui.fg
+                text: "\u{f0582} " + (vpn.names || "disconnected")
+                color: vpn.names === "" ? Ui.bg : Ui.fg
+            }
+
+            Tooltip {
+                target: vpn
+                text: Vpn.location
+                visible: vpn.hovered && text !== "" && !vpnMenu.visible
+            }
+
+            Dropdown {
+                id: vpnMenu
+                target: vpn
+                screen: bar.screen
+
+                ColumnLayout {
+                    Layout.preferredWidth: 192
+                    spacing: 12
+
+                    Repeater {
+                        model: Vpn.options
+                        Header {
+                            required property var modelData
+                            title: modelData[1]
+                            on: Vpn[modelData[0]]
+                            onToggled: Vpn.toggle(modelData[0])
+                        }
+                    }
+                }
             }
         }
 
@@ -156,6 +189,7 @@ PanelWindow {
             id: sound
             readonly property var out: bar.sink?.audio ?? null
             readonly property var mic: bar.source?.audio ?? null
+            readonly property bool bluetooth: bar.sink?.properties?.["device.api"] === "bluez5" || (bar.sink?.name?.startsWith("bluez_output.") ?? false)
 
             hoverable: true
             spacing: 8
@@ -166,7 +200,7 @@ PanelWindow {
             }
 
             Txt {
-                text: (!sound.out || sound.out.muted ? "\u{f0581} " : "\u{f057e} ") + Math.round((sound.out?.volume ?? 0) * 100) + "%"
+                text: (sound.bluetooth ? "\u{f025} " : !sound.out || sound.out.muted ? "\u{f0581} " : "\u{f057e} ") + Math.round((sound.out?.volume ?? 0) * 100) + "%"
                 color: !sound.out || sound.out.muted ? Ui.gray : Ui.fg
             }
             Hairline {
@@ -189,15 +223,40 @@ PanelWindow {
                 target: sound
                 screen: bar.screen
 
+                AudioProfiles {
+                    id: audioProfiles
+                    active: audioMenu.visible
+                }
+
                 ColumnLayout {
-                    Layout.preferredWidth: 316
+                    Layout.preferredWidth: 252
                     spacing: 12
 
                     AudioSection {
                         sink: true
+                        profiles: audioProfiles
                     }
                     AudioSection {
                         sink: false
+                        profiles: audioProfiles
+                    }
+
+                    Txt {
+                        Layout.fillWidth: true
+                        visible: audioProfiles.error !== ""
+                        text: audioProfiles.error
+                        color: Ui.yellow
+                        font.bold: false
+                        wrapMode: Text.Wrap
+                    }
+
+                    Entry {
+                        icon: "\u{f1de}"
+                        text: "Sound settings"
+                        onClicked: {
+                            audioMenu.visible = false;
+                            Quickshell.execDetached(["pavucontrol"]);
+                        }
                     }
                 }
             }
@@ -254,6 +313,12 @@ PanelWindow {
                     id: clock
                     precision: SystemClock.Minutes
                 }
+            }
+
+            Tooltip {
+                target: clockIsland
+                text: Qt.formatDateTime(clock.date, "dddd, d MMM yyyy")
+                visible: clockIsland.hovered && !calendar.visible
             }
 
             Calendar {

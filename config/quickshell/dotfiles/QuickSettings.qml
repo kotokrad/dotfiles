@@ -119,11 +119,11 @@ Dropdown {
             Tile {
                 icon: "\u{f0582}"
                 label: "VPN"
-                status: ({ mullvad: "Mullvad", tailscale: "Tailscale" })[Vpn.active] ?? "Off"
-                active: Vpn.active !== ""
+                status: [Vpn.mullvad ? "Mullvad" : "", Vpn.tailscale ? "Tailscale" : ""].filter(s => s).join(" + ") || "Off"
+                active: Vpn.mullvad || Vpn.tailscale
                 expandable: true
                 expanded: popup.open === "vpn"
-                onToggled: Vpn.active !== "" ? Vpn.set("") : popup.toggle("vpn")
+                onToggled: popup.toggle("vpn")
                 onExpand: popup.toggle("vpn")
             }
 
@@ -233,11 +233,11 @@ Dropdown {
                 model: Vpn.options
                 Entry {
                     required property var modelData
-                    current: modelData[0] !== "" && Vpn.active === modelData[0]
+                    current: Vpn[modelData[0]]
                     iconSpace: true
                     icon: current ? "\u{f00c}" : ""
                     text: modelData[1]
-                    onClicked: Vpn.set(modelData[0])
+                    onClicked: Vpn.toggle(modelData[0])
                 }
             }
         }

@@ -73,6 +73,16 @@ Singleton {
 
     property bool idleInhibit: false
     property bool dnd: false
+    // Open bar menus reserve space above the notification stack, per screen.
+    property var dropdowns: []
+
+    function closeDropdowns(screen = null, except = null) {
+        for (const panel of dropdowns) {
+            if (panel !== except && (screen === null || panel.screen === screen))
+                panel.visible = false;
+        }
+    }
+
     // xdg-desktop-portal-wlr's screencast node; popups would land on the shared screen
     readonly property bool screencast: Pipewire.nodes.values.some(n => n.name.startsWith("xdpw-stream"))
     readonly property bool quiet: dnd || screencast

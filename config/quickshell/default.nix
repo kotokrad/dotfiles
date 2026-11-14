@@ -1,7 +1,7 @@
 { config, pkgs, ... }:
 
 {
-  # Bar, quick settings, VPN switcher, OSD and notifications for mango
+  # Bar, quick settings, VPN menu, OSD and notifications for mango
   programs.quickshell = {
     enable = true;
     systemd = {

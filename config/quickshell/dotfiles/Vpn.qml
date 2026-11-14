@@ -5,31 +5,41 @@ import Quickshell.Io
 
 Singleton {
     id: vpn
-    property string active: ""
-    property bool switcherOpen: false
-    readonly property var options: [["tailscale", "Tailscale"], ["mullvad", "Mullvad"], ["", "Disconnect"]]
+    property bool mullvad: false
+    property bool tailscale: false
+    property string location: ""
+    readonly property var options: [["mullvad", "Mullvad"], ["tailscale", "Tailscale"]]
 
-    function set(which) {
-        run.command = ["sh", "-c", {
-            tailscale: "mullvad disconnect; tailscale up",
-            mullvad: "tailscale down; mullvad connect",
-            "": "tailscale down; mullvad disconnect"
-        }[which]];
-        run.running = true;
+    function toggle(name) {
+        if (name === "mullvad") {
+            mullvadRun.command = ["mullvad", mullvad ? "disconnect" : "connect"];
+            mullvadRun.running = true;
+        } else {
+            tailscaleRun.command = ["tailscale", tailscale ? "down" : "up"];
+            tailscaleRun.running = true;
+        }
+    }
+
+    // One process each, so flipping both quickly doesn't drop the second command
+    Process {
+        id: mullvadRun
+        onExited: poll.running = true
     }
 
     Process {
-        id: run
+        id: tailscaleRun
         onExited: poll.running = true
     }
 
     Process {
         id: poll
-        command: ["sh", "-c", "mullvad status | head -1; tailscale status --json | jq -r .BackendState"]
+        command: ["sh", "-c", "mullvad status --json | jq -r '.state, ([.details.location?.city, .details.location?.country] | map(values) | join(\", \"))'; tailscale status --json | jq -r .BackendState"]
         stdout: StdioCollector {
             onStreamFinished: {
-                const [m, t] = text.split("\n");
-                vpn.active = m.startsWith("Connected") ? "mullvad" : t === "Running" ? "tailscale" : "";
+                const [m, l, t] = text.split("\n");
+                vpn.mullvad = m === "connected";
+                vpn.location = vpn.mullvad ? l : "";
+                vpn.tailscale = t === "Running";
             }
         }
     }

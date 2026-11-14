@@ -9,6 +9,7 @@
     [
       ./hardware-configuration.nix
       ./spacenavd.nix
+      ./vpn.nix
       # ./opensnitch.nix
     ];
 
@@ -31,14 +32,8 @@
   nixpkgs.hostPlatform = "x86_64-linux";
 
   networking.hostName = "nixos";
-  networking.extraHosts = ''
-    127.0.0.1 local.test.com
-    192.168.0.142 homeassistant.local
-  '';
   networking.networkmanager.enable = true;
   networking.nftables.enable = true;
-  # Strict reverse path filtering breaks Tailscale exit node use and some subnet routing setups
-  networking.firewall.checkReversePath = "loose";
   systemd.services.NetworkManager-wait-online.enable = false;
 
   virtualisation.podman = {
@@ -95,9 +90,7 @@
     blueman.enable = true;
     gvfs.enable = true;
     tumbler.enable = true;
-    tailscale.enable = true;
     usbmuxd.enable = true;
-    mullvad-vpn.enable = true;
     flatpak.enable = true;
     playerctld.enable = true;
 
@@ -155,8 +148,7 @@
       keyboards.default = {
         ids = [ "*" ];
         settings = {
-          main.rightalt = "layer(ralt)";
-          "ralt:C" = {
+          altgr = {
             "4" = "3";
             r = "e";
             f = "d";

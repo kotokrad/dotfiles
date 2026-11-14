@@ -13,6 +13,7 @@
 
   home.packages = with pkgs; [
     glib # nvim-tree uses `gio trash`
+    tree-sitter # nvim-treesitter (main) builds parsers with it
   ];
 
   # Remove old nvim config before HM checks for conflicts

@@ -1,3 +1,4 @@
+// Unused
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
@@ -14,7 +15,12 @@ PanelWindow {
     }
 
     visible: Vpn.switcherOpen
-    onVisibleChanged: if (visible) index = Math.max(0, Vpn.options.findIndex(o => o[0] === Vpn.active))
+    onVisibleChanged: {
+        if (visible) {
+            Ui.closeDropdowns();
+            index = Math.max(0, Vpn.options.findIndex(o => o[0] === Vpn.active));
+        }
+    }
     screen: Mango.focusedScreen
     anchors { top: true; bottom: true; left: true; right: true }
     exclusionMode: ExclusionMode.Ignore

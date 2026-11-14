@@ -26,6 +26,8 @@ Rectangle {
         anchors.bottom: parent.bottom
         anchors.right: tile.expandable ? chevron.left : parent.right
         radius: Ui.radius
+        topRightRadius: tile.expandable ? 0 : Ui.radius
+        bottomRightRadius: tile.expandable ? 0 : Ui.radius
         color: body.containsMouse ? tile.hover : "transparent"
 
         RowLayout {
@@ -78,6 +80,8 @@ Rectangle {
         anchors.bottom: parent.bottom
         width: 30
         radius: Ui.radius
+        topLeftRadius: 0
+        bottomLeftRadius: 0
         color: arrow.containsMouse ? tile.hover : "transparent"
 
         Txt {

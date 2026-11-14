@@ -7,7 +7,11 @@ ShellRoot {
         Bar {}
     }
 
-    Notifications {}
+    Notifications {
+        id: notificationArea
+    }
+    ConnectionNotifications {
+        notifications: notificationArea
+    }
     Osd {}
-    VpnSwitcher {}
 }

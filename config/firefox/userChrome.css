@@ -6,6 +6,13 @@
   visibility: collapse;
 }
 
+/* Remove the border and rounded corner around the sidebar */
+#sidebar-box {
+  border: none !important;
+  --sidebar-box-start-start-radius: 0 !important;
+  --sidebar-box-start-end-radius: 0 !important;
+}
+
 /* Hide the sidebar header on extension panels */
 #webextpanels-window #sidebar-panel-header {
   display: none !important;

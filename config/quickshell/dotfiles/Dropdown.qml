@@ -9,6 +9,10 @@ PanelWindow {
     required property Item target
     default property alias content: column.data
     property int padding: 12
+    readonly property real contentBottom: card.y + card.height
+
+    Component.onCompleted: Ui.dropdowns = [...Ui.dropdowns, dropdown]
+    Component.onDestruction: Ui.dropdowns = Ui.dropdowns.filter(p => p !== dropdown)
 
     visible: false
     anchors { top: true; bottom: true; left: true; right: true }
@@ -16,8 +20,19 @@ PanelWindow {
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
     color: "transparent"
+    // Keep the bar reachable through the full-screen dismiss layer.
+    mask: Region {
+        y: Ui.barHeight
+        width: dropdown.width
+        height: Math.max(0, dropdown.height - Ui.barHeight)
+    }
 
-    onVisibleChanged: if (visible) card.x = Math.max(Ui.gap, Math.min(target.mapToItem(null, 0, 0).x, screen.width - card.width - Ui.gap))
+    onVisibleChanged: {
+        if (visible) {
+            Ui.closeDropdowns(screen, dropdown);
+            card.x = Math.max(Ui.gap, Math.min(target.mapToItem(null, 0, 0).x, screen.width - card.width - Ui.gap));
+        }
+    }
 
     Connections {
         target: Mango

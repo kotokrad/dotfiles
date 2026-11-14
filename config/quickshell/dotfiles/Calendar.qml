@@ -5,12 +5,17 @@ import QtQuick.Layouts
 Dropdown {
     id: popup
     property date shown: new Date()
+    // MonthGrid's model.today is frozen until the month changes, so track today ourselves
+    property date now: new Date()
 
     function step(n) {
         shown = new Date(shown.getFullYear(), shown.getMonth() + n, 1);
     }
 
-    onVisibleChanged: if (visible) shown = new Date()
+    onVisibleChanged: if (visible) {
+        now = new Date();
+        shown = now;
+    }
 
     ColumnLayout {
         spacing: 6
@@ -65,17 +70,18 @@ Dropdown {
             delegate: Rectangle {
                 id: day
                 required property var model
+                readonly property bool today: model.day === popup.now.getDate() && model.month === popup.now.getMonth() && model.year === popup.now.getFullYear()
                 implicitWidth: 28
                 implicitHeight: 24
                 radius: Ui.radius
-                color: model.today ? Ui.accent : "transparent"
+                color: today ? Ui.accent : "transparent"
 
                 Txt {
                     anchors.centerIn: parent
                     text: day.model.day
                     font.pixelSize: Ui.menuFontSize
-                    font.bold: day.model.today
-                    color: day.model.today ? Ui.bg : day.model.month === grid.month ? Ui.fg : Ui.bg3
+                    font.bold: day.today
+                    color: day.today ? Ui.bg : day.model.month === grid.month ? Ui.fg : Ui.bg3
                 }
             }
         }

@@ -7,6 +7,7 @@ Rectangle {
     property alias spacing: row.spacing
     property bool hoverable: false
     readonly property bool hovered: mouse.containsMouse
+    readonly property bool panelOpen: Ui.dropdowns.some(panel => panel.visible && panel.target === island)
     property real wheelDelta: 0
     signal clicked
     signal scrolled(int steps)
@@ -14,7 +15,8 @@ Rectangle {
     implicitWidth: row.implicitWidth + 16
     implicitHeight: Ui.height
     radius: Ui.radius
-    color: hoverable && mouse.containsMouse ? Ui.bg2 : Ui.bg0
+    color: hoverable && hovered ? Qt.tint(Ui.bg0, Qt.alpha(Ui.bg2, 0.8))
+        : panelOpen ? Ui.bg1 : Ui.bg0
 
     MouseArea {
         id: mouse

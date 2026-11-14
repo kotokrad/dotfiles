@@ -7,9 +7,7 @@ Island {
     id: tray
     required property QsWindow bar
 
-    // nm-applet keeps running as the Wi-Fi/VPN password agent, and gammastep is the night
-    // light tile in quick settings; their icons are redundant
-    readonly property var hidden: ["nm-applet", "gammastep"]
+    readonly property var hidden: ["gammastep"] // "nm-applet" was removed
     visible: SystemTray.items.values.some(i => !hidden.includes(i.id))
 
     Repeater {

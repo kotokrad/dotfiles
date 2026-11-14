@@ -6,12 +6,22 @@ import Quickshell.Widgets
 import Quickshell.Wayland
 
 PanelWindow {
+    id: notifications
+    readonly property int topOffset: Ui.dropdowns
+        .filter(p => p.visible && p.screen === notifications.screen)
+        .reduce((bottom, p) => Math.max(bottom, p.contentBottom), Ui.barHeight) + Ui.gap
+
+    function isActive(id) {
+        return server.trackedNotifications.values.some(n => n.id === id);
+    }
+
     visible: server.trackedNotifications.values.some(n => !Ui.quiet || n.urgency === NotificationUrgency.Critical)
     screen: Mango.focusedScreen
     anchors { top: true; right: true }
-    margins { top: Ui.gap; right: Ui.gap }
+    margins { top: notifications.topOffset; right: Ui.gap }
+    exclusionMode: ExclusionMode.Ignore
     WlrLayershell.layer: WlrLayer.Overlay
-    implicitWidth: 340
+    implicitWidth: 280
     implicitHeight: column.implicitHeight
     color: "transparent"
 
@@ -38,7 +48,8 @@ PanelWindow {
                 // Apps send a "default" action for clicks on the body (e.g. open the chat)
                 readonly property var defaultAction: modelData.actions.find(a => a.identifier === "default") ?? null
                 readonly property var buttons: modelData.actions.filter(a => a.identifier !== "default")
-                readonly property string icon: modelData.image || (modelData.appIcon.startsWith("/") ? "file://" + modelData.appIcon : modelData.appIcon ? Quickshell.iconPath(modelData.appIcon, true) : "")
+                readonly property string symbol: modelData.hints["x-quickshell-symbol"] ?? ""
+                readonly property string icon: symbol !== "" ? "" : modelData.image || (modelData.appIcon.startsWith("/") ? "file://" + modelData.appIcon : modelData.appIcon ? Quickshell.iconPath(modelData.appIcon, true) : "")
 
                 visible: !Ui.quiet || critical
                 Layout.fillWidth: true
@@ -51,9 +62,18 @@ PanelWindow {
                 // Critical ones stay; hovering pauses the timeout. Apps may ask for less than 5s,
                 // not more: Chromium-based browsers ask for 25s.
                 Timer {
+                    id: expiry
                     running: !card.critical && !mouse.containsMouse && !Ui.quiet
                     interval: card.modelData.expireTimeout > 0 ? Math.min(card.modelData.expireTimeout, 5000) : 5000
                     onTriggered: card.modelData.expire()
+                }
+
+                Connections {
+                    target: card.modelData
+                    function onBodyChanged() {
+                        if (expiry.running)
+                            expiry.restart();
+                    }
                 }
 
                 MouseArea {
@@ -79,6 +99,19 @@ PanelWindow {
                         implicitSize: 36
                     }
 
+                    Txt {
+                        Layout.alignment: Qt.AlignTop
+                        Layout.preferredWidth: 36
+                        Layout.preferredHeight: 36
+                        visible: card.symbol !== ""
+                        text: card.symbol
+                        font.pixelSize: 24
+                        font.bold: false
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        color: Ui.accent
+                    }
+
                     ColumnLayout {
                         Layout.fillWidth: true
                         spacing: 3
@@ -91,6 +124,7 @@ PanelWindow {
                                 Layout.fillWidth: true
                                 elide: Text.ElideRight
                                 text: card.modelData.summary || card.modelData.appName
+                                textFormat: Text.PlainText
                                 font.pixelSize: Ui.menuFontSize
                             }
                             IconButton {
