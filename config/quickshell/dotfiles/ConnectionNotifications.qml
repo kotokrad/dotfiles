@@ -17,7 +17,8 @@ Scope {
     readonly property var bluetoothConnections: Bluetooth.devices.values
         .filter(d => d.connected)
         .map(d => ({ id: d.dbusPath, name: d.name || d.address, icon: d.icon || "bluetooth",
-            symbol: bluetoothSymbol(d.icon), codec: bluetoothCodec(d.address) }))
+            symbol: bluetoothSymbol(d.icon), codec: bluetoothCodec(d.address),
+            battery: d.batteryAvailable ? Math.round(d.battery * 100) + "%" : "" }))
 
     PwObjectTracker {
         objects: watcher.bluetoothNodes
@@ -55,10 +56,11 @@ Scope {
         }
         for (const connection of current) {
             const old = previous.find(c => c.id === connection.id);
-            const body = connection.codec ? "Connected · " + connection.codec : "Connected";
+            const body = ["Connected", connection.codec, connection.battery].filter(s => s).join(" · ");
             if (!old)
                 bluetoothNotice(connection).publish(connection.name, body, connection.icon, connection.symbol, true);
-            else if (connection.codec && connection.codec !== old.codec)
+            // Codec and battery arrive after the connection; update the notice while it's still up
+            else if (connection.codec !== old.codec || connection.battery !== old.battery)
                 bluetoothNotices[connection.id]?.publish(connection.name, body, connection.icon, connection.symbol, false);
         }
     }

@@ -24,7 +24,6 @@
     sync-watch = "watch -d grep -e Dirty: -e Writeback: /proc/meminfo";
     # dump keystrokes https://web.archive.org/web/20191220190018/https://www.drbunsen.org/vim-croquet/
     # vim = ''nvim -w ~/.vimlog "$argv"'';
-    ssh = ''TERM=xterm-256color ${pkgs.openssh}/bin/ssh'';
     mkdir = "mkdir -p";
   };
 

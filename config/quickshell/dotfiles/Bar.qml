@@ -23,6 +23,12 @@ PanelWindow {
     readonly property var wifiNet: wifi?.networks.values.find(n => n.connected) ?? null
     readonly property bool wired: Networking.devices.values.some(d => d.type === DeviceType.Wired && d.connected)
     readonly property var battery: UPower.displayDevice
+    // Draw on battery, charge rate when plugged in
+    property real watts: 0
+    readonly property real notchWidth: Ui.notch.screen === modelData.name ? Ui.notch.width : 0
+    // Text room between the tags and the right islands: the row's margin, two gaps and the island's
+    // padding
+    readonly property real titleRoom: notchWidth > 0 ? rightRow.x - tags.width - 3 * Ui.gap - 16 : Infinity
 
     screen: modelData
     anchors { top: true; left: true; right: true }
@@ -38,6 +44,26 @@ PanelWindow {
         objects: [bar.sink, bar.source]
     }
 
+    // Read from sysfs: UPower's changeRate only refreshes every 30-60 s. Batteries that count
+    // charge instead of energy have current and voltage but no power
+    FileView {
+        id: batteryInfo
+        readonly property var device: UPower.devices.values.find(d => d.isLaptopBattery)
+        path: device ? `/sys/class/power_supply/${device.nativePath}/uevent` : ""
+        onLoaded: {
+            const field = name => text().match(new RegExp(`^POWER_SUPPLY_${name}=(.*)$`, "m"))?.[1];
+            const microwatts = field("POWER_NOW") ?? field("CURRENT_NOW") * field("VOLTAGE_NOW") / 1e6;
+            bar.watts = Math.abs(microwatts) / 1e6;
+        }
+    }
+    Timer {
+        interval: 3000
+        running: bar.battery.isLaptopBattery
+        repeat: true
+        triggeredOnStart: true
+        onTriggered: batteryInfo.reload()
+    }
+
     QuickSettings {
         id: settings
         bar: bar
@@ -51,13 +77,14 @@ PanelWindow {
         spacing: Ui.gap
 
         Tags {
+            id: tags
             monitorName: bar.modelData.name
         }
 
         Island {
             visible: bar.title !== "" && bar.tabs.length < 2
             Txt {
-                Layout.maximumWidth: 400
+                Layout.maximumWidth: Math.min(400, bar.titleRoom)
                 text: bar.title
                 elide: Text.ElideRight
             }
@@ -73,7 +100,7 @@ PanelWindow {
                 opacity: active || hovered ? 1 : 0.55
                 onClicked: if (!active) Quickshell.execDetached(["mmsg", "dispatch", "focusid", "client," + modelData.id])
                 Txt {
-                    Layout.maximumWidth: tab.active ? 250 : 100
+                    Layout.maximumWidth: Math.min(tab.active ? 250 : 100, (bar.titleRoom - (bar.tabs.length - 1) * (16 + Ui.gap)) / bar.tabs.length)
                     text: tab.modelData.title
                     elide: Text.ElideRight
                 }
@@ -82,8 +109,12 @@ PanelWindow {
     }
 
     RowLayout {
+        id: rightRow
         anchors.right: parent.right
         anchors.rightMargin: Ui.gap
+        // With a notch: up to VPN end a gap before it, the rest spans from a gap after it to the edge
+        anchors.left: bar.notchWidth > 0 ? parent.left : undefined
+        anchors.leftMargin: (bar.width - bar.notchWidth) / 2 - Ui.gap - vpn.x - vpn.width
         anchors.bottom: parent.bottom
         spacing: Ui.gap
 
@@ -139,18 +170,31 @@ PanelWindow {
             }
         }
 
+        Item {
+            visible: bar.notchWidth > 0
+            implicitWidth: bar.notchWidth
+            Layout.minimumWidth: bar.notchWidth
+        }
+
         Island {
             id: network
             property string ip: ""
 
+            // The only island that shrinks: the network name gets cut short when the row doesn't fit
+            Layout.fillWidth: true
+            Layout.preferredWidth: netLabel.implicitWidth + 16
+            Layout.maximumWidth: netLabel.implicitWidth + 16
             hoverable: true
             onHoveredChanged: if (hovered) ipProc.running = true
             onClicked: netMenu.visible = !netMenu.visible
 
             Txt {
+                id: netLabel
+                Layout.maximumWidth: network.width - 16
                 text: bar.wired ? "\u{f0200} Ethernet"
                     : bar.wifiNet ? Ui.wifiIcon(bar.wifiNet.signalStrength) + " " + bar.wifiNet.name
                     : "\u{f092d}"
+                elide: Text.ElideRight
             }
 
             Process {
@@ -183,16 +227,18 @@ PanelWindow {
             }
         }
 
-        // Esim {}
+        Item {
+            visible: bar.notchWidth > 0
+            Layout.fillWidth: true
+        }
 
         Island {
             id: sound
+            Layout.leftMargin: bar.notchWidth > 0 ? -Ui.gap : 0 // one gap around the spacer, not two
             readonly property var out: bar.sink?.audio ?? null
-            readonly property var mic: bar.source?.audio ?? null
             readonly property bool bluetooth: bar.sink?.properties?.["device.api"] === "bluez5" || (bar.sink?.name?.startsWith("bluez_output.") ?? false)
 
             hoverable: true
-            spacing: 8
             onClicked: audioMenu.visible = !audioMenu.visible
             onScrolled: steps => {
                 if (sound.out)
@@ -202,14 +248,6 @@ PanelWindow {
             Txt {
                 text: (sound.bluetooth ? "\u{f025} " : !sound.out || sound.out.muted ? "\u{f0581} " : "\u{f057e} ") + Math.round((sound.out?.volume ?? 0) * 100) + "%"
                 color: !sound.out || sound.out.muted ? Ui.gray : Ui.fg
-            }
-            Hairline {
-                visible: !!sound.mic
-            }
-            Txt {
-                visible: !!sound.mic
-                text: (sound.mic?.muted ? "\u{f036d} " : "\u{f036c} ") + Math.round((sound.mic?.volume ?? 0) * 100) + "%"
-                color: sound.mic?.muted ? Ui.gray : Ui.fg
             }
 
             Tooltip {
@@ -299,6 +337,11 @@ PanelWindow {
                 visible: bar.battery.isLaptopBattery
                 text: Ui.batteryIcon(status.pct, status.charging) + " " + status.pct + "%"
                 color: status.charging ? Ui.fg : status.pct < 15 ? Ui.red : status.pct < 30 ? Ui.yellow : Ui.fg
+            }
+            Txt {
+                visible: bar.battery.isLaptopBattery && bar.watts > 0
+                text: bar.watts.toFixed(1) + "W"
+                color: Ui.gray
             }
         }
 

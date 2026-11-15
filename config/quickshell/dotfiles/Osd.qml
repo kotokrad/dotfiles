@@ -34,8 +34,9 @@ PanelWindow {
         show(m ? "\u{f0581}" : "\u{f057e}", v, m);
     }
 
-    function changeBrightness(step) {
-        brightness.command = ["brightnessctl", "-m", "set", step];
+    function changeBrightness(step, kbd) {
+        brightness.kbd = kbd;
+        brightness.command = ["brightnessctl", "-m"].concat(kbd ? ["-d", "*kbd_backlight"] : []).concat(["set", step]);
         brightness.running = true;
     }
 
@@ -70,10 +71,16 @@ PanelWindow {
     IpcHandler {
         target: "brightness"
         function up(): void {
-            osd.changeBrightness("5%+");
+            osd.changeBrightness("5%+", false);
         }
         function down(): void {
-            osd.changeBrightness("5%-");
+            osd.changeBrightness("5%-", false);
+        }
+        function kbdUp(): void {
+            osd.changeBrightness("25%+", true);
+        }
+        function kbdDown(): void {
+            osd.changeBrightness("25%-", true);
         }
     }
 
@@ -98,8 +105,13 @@ PanelWindow {
     // brightnessctl -m prints "device,class,current,percent%,max"
     Process {
         id: brightness
+        property bool kbd
         stdout: StdioCollector {
-            onStreamFinished: osd.show("\u{f00e0}", parseInt(text.split(",")[3]) / 100, false)
+            onStreamFinished: {
+                osd.show(brightness.kbd ? "\u{f030c}" : "\u{f00e0}", parseInt(text.split(",")[3]) / 100, false);
+                if (!brightness.kbd)
+                    Brightness.refresh();
+            }
         }
     }
 

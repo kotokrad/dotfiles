@@ -4,6 +4,7 @@ import QtQuick.Layouts
 
 Dropdown {
     id: popup
+    objectName: "calendar"
     property date shown: new Date()
     // MonthGrid's model.today is frozen until the month changes, so track today ourselves
     property date now: new Date()

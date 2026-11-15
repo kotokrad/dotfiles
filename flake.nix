@@ -32,9 +32,13 @@
         nur.modules.nixos.default
         home-manager.nixosModules.home-manager
         mango.nixosModules.mango
-        {
-          programs.mango.enable = true;
-        }
+        ({ config, ... }: {
+          programs.mango = {
+            enable = true;
+            # Use the patched build
+            package = config.home-manager.users.kotokrad.wayland.windowManager.mango.package;
+          };
+        })
         {
           nixpkgs.overlays = [ nur.overlays.default ];
           home-manager.useUserPackages = true;

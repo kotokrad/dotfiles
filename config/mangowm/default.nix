@@ -1,4 +1,4 @@
-{ config, inputs, pkgs, ... }: let
+{ config, inputs, lib, pkgs, ... }: let
   # Browser extension popups
   extension-popups = pkgs.writeShellApplication {
     name = "mango-extension-popups";
@@ -31,24 +31,6 @@
       done
     '';
   };
-
-  # Meta+Tab on a maximized or fullscreen window hands that state to the next window, like monocle,
-  # instead of focusing a window hidden behind it
-  focus-stack = pkgs.writeShellApplication {
-    name = "mango-focus-stack";
-    runtimeInputs = [ config.wayland.windowManager.mango.package pkgs.jq ];
-    text = ''
-      state=$(mmsg get focusing-client | jq -r 'if .is_fullscreen then "togglefullscreen" elif .is_maximized then "togglemaximizescreen" else "" end')
-      if [ -z "$state" ]; then
-        exec mmsg dispatch focusstack,"$1"
-      fi
-      mmsg dispatch setoption,animations,0 # an instant swap, like monocle
-      mmsg dispatch "$state"
-      mmsg dispatch focusstack,"$1"
-      mmsg dispatch "$state"
-      mmsg dispatch setoption,animations,1
-    '';
-  };
 in {
   systemd.user.services.mango-extension-popups = {
     Unit = {
@@ -69,7 +51,6 @@ in {
   ];
 
   home.packages = with pkgs; [
-    focus-stack
     grim
     slurp
     wl-clipboard
@@ -86,6 +67,10 @@ in {
 
   wayland.windowManager.mango = {
     enable = true;
+    # Hover raises the window as well as focusing it, like Hyprland
+    package = lib.mkDefault (inputs.mango.packages.${pkgs.stdenv.hostPlatform.system}.mango.overrideAttrs (old: {
+      patches = (old.patches or [ ]) ++ [ ../../patches/mango-raise-on-hover.patch ];
+    }));
     systemd.variables = ["--all"];
 
     autostart_sh = ''

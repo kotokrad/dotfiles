@@ -48,9 +48,25 @@ Singleton {
         }
     }
 
+    // Per-machine values: quickshell.settings in Nix (config/quickshell/default.nix)
+    FileView {
+        path: (Quickshell.env("XDG_CONFIG_HOME") || Quickshell.env("HOME") + "/.config") + "/quickshell-settings.json"
+        blockLoading: true
+
+        JsonAdapter {
+            id: settings
+            property int barHeight: 24
+            property JsonObject notch: JsonObject {
+                property string screen: ""
+                property int width: 0
+            }
+        }
+    }
+    readonly property JsonObject notch: settings.notch
+
     readonly property string font: "JetBrainsMono Nerd Font Propo"
     readonly property int fontSize: 10
-    readonly property int barHeight: 24
+    readonly property int barHeight: settings.barHeight
     readonly property int height: 21
     // The strip above the islands; their click areas reach over it, so the screen's top edge works
     readonly property int topGap: barHeight - height

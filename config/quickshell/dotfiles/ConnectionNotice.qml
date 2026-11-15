@@ -27,7 +27,7 @@ Scope {
         if (sender.running || desiredBody === sentBody)
             return;
         const replace = notifications.isActive(notificationId) ? notificationId : 0;
-        // Codec metadata must not resurrect a dismissed or expired notification.
+        // Codec and battery updates must not resurrect a dismissed or expired notification.
         if (!announce && replace === 0)
             return;
         announce = false;

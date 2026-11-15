@@ -28,8 +28,11 @@ Island {
     Txt { text: "\u{efc5} " + sensors.ram + "%" }
     Hairline {}
     Txt { text: "\u{f4bc} " + sensors.cpu + "%" }
-    Hairline {}
+    Hairline {
+        visible: tempFile.path !== ""
+    }
     Rectangle {
+        visible: tempFile.path !== ""
         Layout.leftMargin: -8
         Layout.rightMargin: -8
         implicitWidth: tempText.implicitWidth + 16
@@ -179,9 +182,12 @@ Island {
 
     Process {
         id: df
-        command: ["sh", "-c", "df -B1 --output=avail / | tail -1 | numfmt --to=iec-i --format=%.2f"]
+        command: ["df", "-B1", "--output=avail", "/"]
         stdout: StdioCollector {
-            onStreamFinished: sensors.disk = text.trim() + "B"
+            onStreamFinished: {
+                const gb = Number(text.trim().split("\n").pop()) / 1e9;
+                sensors.disk = gb.toFixed(gb >= 100 ? 0 : gb >= 10 ? 1 : 2) + "GB";
+            }
         }
     }
 

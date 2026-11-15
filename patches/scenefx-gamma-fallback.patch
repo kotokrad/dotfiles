@@ -1,0 +1,317 @@
+diff --git a/include/render/fx_renderer/fx_renderer.h b/include/render/fx_renderer/fx_renderer.h
+index ba6cc4b..3d7bc08 100644
+--- a/include/render/fx_renderer/fx_renderer.h
++++ b/include/render/fx_renderer/fx_renderer.h
+@@ -164,6 +164,7 @@ struct fx_renderer {
+ 		bool OES_texture_half_float_linear;
+ 		bool EXT_texture_norm16;
+ 		bool EXT_disjoint_timer_query;
++		bool EXT_shader_framebuffer_fetch;
+ 	} exts;
+ 
+ 	struct {
+@@ -203,8 +204,13 @@ struct fx_renderer {
+ 		struct blur_shader blur1;
+ 		struct blur_shader blur2;
+ 		struct blur_effects_shader blur_effects;
++		struct gamma_lut_shader gamma_lut;
+ 	} shaders;
+ 
++	// Software gamma LUT for outputs without a hardware one, sampled from gamma_lut_tr
++	GLuint gamma_lut_tex;
++	struct wlr_color_transform *gamma_lut_tr;
++
+ 	struct wl_list buffers; // fx_framebuffer.link
+ 	struct wl_list textures; // fx_texture.link
+ 	struct wl_list offscreen_buffers; // fx_offscreen_buffers.link
+diff --git a/include/render/fx_renderer/shaders.h b/include/render/fx_renderer/shaders.h
+index f3a2bd5..fb3fda8 100644
+--- a/include/render/fx_renderer/shaders.h
++++ b/include/render/fx_renderer/shaders.h
+@@ -176,4 +176,13 @@ struct blur_effects_shader {
+ 
+ bool link_blur_effects_program(struct blur_effects_shader *shader);
+ 
++struct gamma_lut_shader {
++	GLuint program;
++	GLint proj;
++	GLint lut;
++	GLint pos_attrib;
++};
++
++bool link_gamma_lut_program(struct gamma_lut_shader *shader);
++
+ #endif
+diff --git a/include/scenefx/render/pass.h b/include/scenefx/render/pass.h
+index 0ef3750..e8a7e23 100644
+--- a/include/scenefx/render/pass.h
++++ b/include/scenefx/render/pass.h
+@@ -157,4 +157,12 @@ void fx_render_pass_read_to_buffer(struct fx_gles_render_pass *pass,
+ 		pixman_region32_t *region, struct fx_framebuffer *dst_buffer,
+ 		struct fx_framebuffer *src_buffer);
+ 
++/**
++ * Run the region of the pass buffer through a per-channel gamma LUT, in place
++ * (GL_EXT_shader_framebuffer_fetch). For outputs without a hardware gamma LUT.
++ * Pixels outside the region are assumed to already be transformed.
++ */
++void fx_render_pass_apply_gamma_lut(struct fx_gles_render_pass *pass,
++		pixman_region32_t *region, struct wlr_color_transform *tr);
++
+ #endif
+diff --git a/render/fx_renderer/fx_pass.c b/render/fx_renderer/fx_pass.c
+index 39b6226..93b5e22 100644
+--- a/render/fx_renderer/fx_pass.c
++++ b/render/fx_renderer/fx_pass.c
+@@ -1290,6 +1290,65 @@ done:
+ 	pixman_region32_fini(&region);
+ }
+ 
++void fx_render_pass_apply_gamma_lut(struct fx_gles_render_pass *pass,
++		pixman_region32_t *region, struct wlr_color_transform *tr) {
++	struct fx_renderer *renderer = pass->buffer->renderer;
++	if (!renderer->exts.EXT_shader_framebuffer_fetch || !pixman_region32_not_empty(region)) {
++		return;
++	}
++
++	push_fx_debug(renderer);
++
++	if (renderer->gamma_lut_tr != tr) {
++		GLubyte lut[256 * 4];
++		for (int i = 0; i < 256; i++) {
++			const float in[3] = { i / 255.0f, i / 255.0f, i / 255.0f };
++			float out[3];
++			wlr_color_transform_eval(tr, out, in);
++			for (int c = 0; c < 3; c++) {
++				lut[i * 4 + c] = roundf(fminf(fmaxf(out[c], 0.0f), 1.0f) * 255.0f);
++			}
++			lut[i * 4 + 3] = 255;
++		}
++		if (renderer->gamma_lut_tex == 0) {
++			glGenTextures(1, &renderer->gamma_lut_tex);
++		}
++		glActiveTexture(GL_TEXTURE0);
++		glBindTexture(GL_TEXTURE_2D, renderer->gamma_lut_tex);
++		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
++		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
++		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
++		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
++		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, lut);
++		// The ref keeps the pointer from being reused for a different LUT
++		wlr_color_transform_unref(renderer->gamma_lut_tr);
++		renderer->gamma_lut_tr = wlr_color_transform_ref(tr);
++	}
++
++	struct gamma_lut_shader *shader = &renderer->shaders.gamma_lut;
++	struct wlr_box box = {
++		.width = pass->buffer->buffer->width,
++		.height = pass->buffer->buffer->height,
++	};
++
++	// Same buffer the frame was just drawn into, so no render pass split
++	fx_framebuffer_bind(pass->buffer);
++	glDisable(GL_BLEND);
++	glDisable(GL_STENCIL_TEST);
++	glUseProgram(shader->program);
++
++	glActiveTexture(GL_TEXTURE0);
++	glBindTexture(GL_TEXTURE_2D, renderer->gamma_lut_tex);
++	glUniform1i(shader->lut, 0);
++	set_proj_matrix(shader->proj, pass->projection_matrix, &box);
++
++	render(&box, region, shader->pos_attrib);
++
++	glBindTexture(GL_TEXTURE_2D, 0);
++
++	pop_fx_debug(renderer);
++}
++
+ static const char *reset_status_str(GLenum status) {
+ 	switch (status) {
+ 	case GL_GUILTY_CONTEXT_RESET_KHR:
+diff --git a/render/fx_renderer/fx_renderer.c b/render/fx_renderer/fx_renderer.c
+index 8d0a7b2..a089808 100644
+--- a/render/fx_renderer/fx_renderer.c
++++ b/render/fx_renderer/fx_renderer.c
+@@ -98,6 +98,7 @@ static inline void free_shaders(struct fx_renderer *renderer) {
+ 	glDeleteProgram(renderer->shaders.blur1.program);
+ 	glDeleteProgram(renderer->shaders.blur2.program);
+ 	glDeleteProgram(renderer->shaders.blur_effects.program);
++	glDeleteProgram(renderer->shaders.gamma_lut.program);
+ 	pop_fx_debug(renderer);
+ }
+ 
+@@ -124,6 +125,8 @@ static void fx_renderer_destroy(struct wlr_renderer *wlr_renderer) {
+ 	}
+ 
+ 	free_shaders(renderer);
++	glDeleteTextures(1, &renderer->gamma_lut_tex);
++	wlr_color_transform_unref(renderer->gamma_lut_tr);
+ 
+ 	if (renderer->exts.KHR_debug) {
+ 		glDisable(GL_DEBUG_OUTPUT_KHR);
+@@ -436,6 +439,11 @@ static bool link_shaders(struct fx_renderer *renderer) {
+ 		wlr_log(WLR_ERROR, "Could not link blur_effects shader");
+ 		goto error;
+ 	}
++	if (renderer->exts.EXT_shader_framebuffer_fetch &&
++			!link_gamma_lut_program(&renderer->shaders.gamma_lut)) {
++		wlr_log(WLR_ERROR, "Could not link gamma_lut shader");
++		goto error;
++	}
+ 
+ 	return true;
+ 
+@@ -504,6 +512,9 @@ struct wlr_renderer *fx_renderer_create_egl(struct wlr_egl *egl) {
+ 	renderer->exts.EXT_texture_norm16 =
+ 		check_gl_ext(exts_str, "GL_EXT_texture_norm16");
+ 
++	renderer->exts.EXT_shader_framebuffer_fetch =
++		check_gl_ext(exts_str, "GL_EXT_shader_framebuffer_fetch");
++
+ 	if (check_gl_ext(exts_str, "GL_KHR_debug")) {
+ 		renderer->exts.KHR_debug = true;
+ 		load_gl_proc(&renderer->procs.glDebugMessageCallbackKHR,
+diff --git a/render/fx_renderer/shaders.c b/render/fx_renderer/shaders.c
+index 51cfe90..25955e4 100644
+--- a/render/fx_renderer/shaders.c
++++ b/render/fx_renderer/shaders.c
+@@ -20,6 +20,7 @@
+ #include "blur1_frag_src.h"
+ #include "blur2_frag_src.h"
+ #include "blur_effects_frag_src.h"
++#include "gamma_lut_frag_src.h"
+ 
+ GLuint compile_shader(GLuint type, const GLchar *src) {
+ 	GLuint shader = glCreateShader(type);
+@@ -359,3 +360,16 @@ bool link_blur_effects_program(struct blur_effects_shader *shader) {
+ 
+ 	return true;
+ }
++
++bool link_gamma_lut_program(struct gamma_lut_shader *shader) {
++	GLuint prog;
++	shader->program = prog = link_program(gamma_lut_frag_src);
++	if (!shader->program) {
++		return false;
++	}
++	shader->proj = glGetUniformLocation(prog, "proj");
++	shader->lut = glGetUniformLocation(prog, "lut");
++	shader->pos_attrib = glGetAttribLocation(prog, "pos");
++
++	return true;
++}
+diff --git a/render/fx_renderer/shaders/gamma_lut.frag b/render/fx_renderer/shaders/gamma_lut.frag
+new file mode 100644
+index 0000000..6ecdf64
+--- /dev/null
++++ b/render/fx_renderer/shaders/gamma_lut.frag
+@@ -0,0 +1,21 @@
++#extension GL_EXT_shader_framebuffer_fetch : require
++
++#ifdef GL_FRAGMENT_PRECISION_HIGH
++precision highp float;
++#else
++precision mediump float;
++#endif
++
++uniform sampler2D lut; // 256x1, one entry per 8-bit channel value
++
++void main() {
++	// The pixel being overwritten. On tiling GPUs it's still in tile memory
++	vec4 c = gl_LastFragData[0];
++	// Centre of texel k for channel value k/255
++	vec3 s = (c.rgb * 255.0 + 0.5) / 256.0;
++	gl_FragColor = vec4(
++		texture2D(lut, vec2(s.r, 0.5)).r,
++		texture2D(lut, vec2(s.g, 0.5)).g,
++		texture2D(lut, vec2(s.b, 0.5)).b,
++		c.a);
++}
+diff --git a/render/fx_renderer/shaders/meson.build b/render/fx_renderer/shaders/meson.build
+index 1bafd4f..677ca87 100644
+--- a/render/fx_renderer/shaders/meson.build
++++ b/render/fx_renderer/shaders/meson.build
+@@ -14,6 +14,7 @@ shaders = [
+ 	'blur1.frag',
+ 	'blur2.frag',
+ 	'blur_effects.frag',
++	'gamma_lut.frag',
+ ]
+ 
+ foreach name : shaders
+diff --git a/types/scene/wlr_scene.c b/types/scene/wlr_scene.c
+index 9a9fcc0..a5f4eba 100644
+--- a/types/scene/wlr_scene.c
++++ b/types/scene/wlr_scene.c
+@@ -18,6 +18,7 @@
+ #include <wlr/util/transform.h>
+ 
+ #include "render/color.h"
++#include "render/fx_renderer/fx_renderer.h"
+ #include "render/tracy.h"
+ #include "scenefx/render/fx_renderer/fx_offscreen_buffers.h"
+ #include "scenefx/render/pass.h"
+@@ -2296,6 +2297,11 @@ void wlr_scene_set_gamma_control_manager_v1(struct wlr_scene *scene,
+ 	    struct wlr_gamma_control_manager_v1 *gamma_control) {
+ 	assert(scene->gamma_control_manager_v1 == NULL);
+ 	scene->gamma_control_manager_v1 = gamma_control;
++	// Outputs without a hardware LUT get one rendered in software. 256 entries
++	// match an 8-bit buffer exactly.
++	if (gamma_control->fallback_gamma_size == 0) {
++		gamma_control->fallback_gamma_size = 256;
++	}
+ 
+ 	scene->gamma_control_manager_v1_destroy.notify =
+ 		scene_handle_gamma_control_manager_v1_destroy;
+@@ -3083,13 +3089,19 @@ bool wlr_scene_output_build_state(struct wlr_scene_output *scene_output,
+ 		scene_output->scene->debug_damage_option;
+ 
+ 	bool render_gamma_lut = false;
+-	if (wlr_output_get_gamma_size(output) == 0 && output->renderer->features.output_color_transform) {
++	// The fx renderer applies the LUT itself, see fx_render_pass_apply_gamma_lut()
++	if (wlr_output_get_gamma_size(output) == 0 && (output->renderer->features.output_color_transform
++			|| (wlr_renderer_is_fx(output->renderer) &&
++				fx_get_renderer(output->renderer)->exts.EXT_shader_framebuffer_fetch))) {
+ 		if (scene_output->gamma_lut_color_transform != scene_output->prev_gamma_lut_color_transform) {
+ 			scene_output_damage_whole(scene_output);
+ 		}
+ 		if (scene_output->gamma_lut_color_transform != NULL) {
+ 			render_gamma_lut = true;
+ 		}
++		// Nothing goes to the output's hardware, so don't keep
++		// wlr_scene_output_needs_frame() true forever
++		scene_output->gamma_lut_changed = false;
+ 	}
+ 
+ 	struct render_data render_data = {
+@@ -3256,8 +3268,9 @@ bool wlr_scene_output_build_state(struct wlr_scene_output *scene_output,
+ 		timer->pre_render_duration = timespec_to_nsec(&duration);
+ 	}
+ 
+-	if ((render_gamma_lut
+-			&& scene_output->gamma_lut_color_transform != scene_output->prev_gamma_lut_color_transform)
++	// Also when the LUT goes away, so prev_gamma_lut_color_transform is reset and
++	// the whole output isn't damaged again every frame
++	if (scene_output->gamma_lut_color_transform != scene_output->prev_gamma_lut_color_transform
+ 			|| scene_output->prev_supplied_color_transform != options->color_transform
+ 			|| (state->committed & WLR_OUTPUT_STATE_IMAGE_DESCRIPTION)) {
+ 		const struct wlr_output_image_description *output_description =
+@@ -3460,6 +3473,17 @@ bool wlr_scene_output_build_state(struct wlr_scene_output *scene_output,
+ 				fx_pass->buffer, fx_pass->fx_offscreen_buffers->blur_saved_pixels_buffer);
+ 	}
+ 
++	if (render_gamma_lut) {
++		// Only freshly drawn pixels: everything else, including the restored blur
++		// padding, comes from an earlier frame and already went through the LUT
++		pixman_region32_t gamma_region;
++		pixman_region32_init(&gamma_region);
++		pixman_region32_subtract(&gamma_region, &render_data.damage, &fx_pass->blur_padding_region);
++		fx_render_pass_apply_gamma_lut(fx_pass, &gamma_region,
++				scene_output->gamma_lut_color_transform);
++		pixman_region32_fini(&gamma_region);
++	}
++
+ 	pixman_region32_fini(&render_data.damage);
+ 
+ 	if (!wlr_render_pass_submit(render_pass)) {

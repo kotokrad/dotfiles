@@ -1,27 +1,56 @@
 # Standalone home-manager for the macbook (Fedora Asahi Remix):
 #   nix run home-manager -- switch --flake ~/nixos-config#macbook
 #
-# TODO on Fedora (system side, outside home-manager):
-#   sudo dnf install
-#     gcc make                          # nvim-treesitter parsers, blink.cmp build, rust/cgo linking
-#     tcpdump nmap                      # used with sudo, which doesn't search ~/.nix-profile
-#     android-tools                     # ships the udev rules adb needs
-#     gnome-disk-utility                # talks to Fedora's udisks + polkit
-#     brightnessctl                     # quickshell brightness OSD
-#     thunar gvfs tumbler               # Super+E; a Nix Thunar can't load Fedora's gvfs (trash, MTP)
-#     thunar-archive-plugin file-roller # Thunar's Extract here / Create archive
-#     mate-polkit                       # polkit agent (needs a setuid helper), start
-#                                       #   /usr/libexec/polkit-mate-authentication-agent-1 with the session
-#     gnome-keyring                     # unlocked at login through PAM
-#     hyprlock                          # PAM again; its config comes from here
-#     xdg-desktop-portal-wlr xdg-desktop-portal-gtk
-#     fish && chsh -s /usr/bin/fish
-#   mullvad-vpn, tailscale from their repos            # quickshell VPN widget
-#   sudo usermod -aG dialout $USER                     # serial ports: tio, arduino-cli
-#   /usr/share/wayland-sessions/mango.desktop          # Exec=/home/kotokrad/.nix-profile/bin/mango
-#   after the first switch: run the `sudo ...` GPU setup command it prints
-#   copy ~/.config/gammastep/config.ini, wallpaper + hyprlock avatar under ~/pictures
-{ config, pkgs, ... }:
+# Fedora setup, outside home-manager
+#
+# Packages (dnf install)
+#   nix nix-daemon                    # nix package manager
+#   gcc make                          # treesitter parsers, blink.cmp, rust/cgo linking
+#   tcpdump nmap                      # run with sudo, which doesn't search ~/.nix-profile
+#   android-tools                     # adb's udev rules
+#   gnome-disk-utility                # needs Fedora's udisks + polkit
+#   brightnessctl pipewire-utils      # quickshell brightness OSD, audio profiles
+#   bluez tuned-ppd                   # quickshell Bluetooth and Power tiles
+#   thunar gvfs tumbler               # a Nix Thunar can't load Fedora's gvfs (trash, MTP)
+#   thunar-archive-plugin file-roller # Thunar's Extract here / Create archive
+#   mate-polkit                       # polkit agent (setuid helper), started below
+#   gnome-keyring                     # unlocked at login through PAM
+#   xdg-desktop-portal-wlr xdg-desktop-portal-gtk fish
+#
+# Packages from their own repos
+#   mullvad-vpn tailscale
+#
+# Commands
+#   sudo systemctl enable --now nix-daemon
+#   sudo systemctl enable --now bluetooth
+#   chsh -s /usr/bin/fish
+#   sudo usermod -aG dialout $USER    # serial ports: tio, arduino-cli
+#   sudo grubby --update-kernel=ALL --args=appledrm.show_notch=1  # screen around the notch
+#
+# Files
+#   /etc/modprobe.d/hid_apple.conf    # swap ctrl/fn, proper F-keys; apply with `sudo dracut -f`
+#     options hid_apple swap_fn_leftctrl=1 fnmode=2
+#   /etc/tuned/profiles/battery-saver/tuned.conf  # powersave, P-cores capped at 1.97 GHz
+#     [main]
+#     include=powersave
+#     [sysfs]
+#     /sys/devices/system/cpu/cpufreq/policy4/scaling_max_freq=1968000
+#   /etc/tuned/ppd.conf, [profiles]   # then sudo systemctl restart tuned tuned-ppd
+#     power-saver=battery-saver
+#   /etc/pam.d/quickshell-lock        # lock screen password check
+#     auth include login
+#   /usr/share/wayland-sessions/mango.desktop
+#     [Desktop Entry]
+#     Name=Mango
+#     Comment=mango WM
+#     DesktopNames=mango;wlroots
+#     Exec=/home/kotokrad/.nix-profile/bin/mango
+#     Type=Application
+#
+# After the first switch
+#   run the sudo GPU setup command it prints
+#   copy ~/.config/gammastep/config.ini and the wallpaper (~/pictures/wallpapers)
+{ config, inputs, pkgs, ... }:
 
 let
   packages = with pkgs; [
@@ -32,6 +61,7 @@ let
     mate-calc
     mousepad
     imv                         # image viewer
+    xfce4-taskmanager
 
   # Utility
     ripgrep
@@ -42,6 +72,7 @@ let
     tealdeer                    # (tldr) summary of a man page
     jq
     ffmpeg
+    wev
 
   # Dev
     anyzig
@@ -63,6 +94,17 @@ let
     nerd-fonts.jetbrains-mono   # rofi, quickshell
     papirus-icon-theme          # rofi, quickshell tray
 ];
+
+  # Pause gammastep hyprpicker runs
+  hyprpicker = pkgs.writeShellScriptBin "hyprpicker" ''
+    if systemctl --user -q is-active gammastep; then
+      systemctl --user kill -s KILL gammastep
+      systemctl --user stop gammastep
+      trap 'systemctl --user start gammastep' EXIT
+      sleep 0.15
+    fi
+    ${pkgs.hyprpicker}/bin/hyprpicker "$@"
+  '';
 in
 {
   imports = [
@@ -86,7 +128,7 @@ in
     username = "kotokrad";
     homeDirectory = "/home/kotokrad";
     stateVersion = "26.11";
-    packages = packages;
+    packages = packages ++ [ (pkgs.lib.hiPrio hyprpicker) ];
     shellAliases.nix-switch = "home-manager switch --flake '/home/kotokrad/nixos-config#macbook'";
   };
 
@@ -107,6 +149,31 @@ in
       '';
     });
   };
+
+  # The screen reaches up around the notch (appledrm.show_notch, see the top)
+  quickshell.settings = {
+    barHeight = 26;
+    notch = { screen = "eDP-1"; width = 154; }; # logical px
+  };
+
+  # apple-drm has no gamma LUT, and its CTM costs battery.
+  # scenefx patched to apply gammastep's LUT on the GPU
+  wayland.windowManager.mango = {
+    package =
+      let system = pkgs.stdenv.hostPlatform.system;
+      in (inputs.mango.packages.${system}.mango.override {
+        scenefx = inputs.mango.inputs.scenefx.packages.${system}.default.overrideAttrs (old: {
+          patches = (old.patches or [ ]) ++ [ ./patches/scenefx-gamma-fallback.patch ];
+        });
+      }).overrideAttrs (old: {
+        patches = (old.patches or [ ]) ++ [ ./patches/mango-raise-on-hover.patch ];
+      });
+
+    extraConfig = ''
+      trackpad_scroll_factor = 1.0
+    '';
+  };
+
 
   # Fedora's xdg-desktop-portal doesn't look in the Nix profile
   xdg.configFile."xdg-desktop-portal/mango-portals.conf".source =

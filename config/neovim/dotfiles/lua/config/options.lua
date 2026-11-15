@@ -33,6 +33,7 @@ vim.opt.shiftwidth = 2
 vim.opt.updatetime = 100
 vim.opt.timeoutlen = 500
 vim.opt.mouse = "a"
+vim.opt.mousescroll = "ver:2,hor:6"
 vim.opt.cmdheight = 1
 vim.opt.wildmode = "longest,list,full"
 vim.opt.sessionoptions = "blank,curdir,folds,help,tabpages,winsize"

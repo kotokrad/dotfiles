@@ -8,6 +8,7 @@ import Quickshell.Services.UPower
 
 Dropdown {
     id: popup
+    objectName: "quicksettings"
     required property var bar
     property string open: "" // expanded list: wifi, bt, vpn, theme
     property string armed: "" // power action waiting for a second click
@@ -45,11 +46,40 @@ Dropdown {
             Layout.fillWidth: true
             spacing: 6
 
-            Txt {
-                Layout.fillWidth: true
+            ColumnLayout {
                 visible: UPower.displayDevice.isLaptopBattery
-                text: Ui.batteryIcon(popup.pct, UPower.displayDevice.state === UPowerDeviceState.Charging) + " " + popup.pct + "%"
-                font.pixelSize: Ui.menuFontSize
+                spacing: 2
+
+                RowLayout {
+                    spacing: 6
+                    Txt {
+                        text: Ui.batteryIcon(popup.pct, UPower.displayDevice.state === UPowerDeviceState.Charging) + " " + popup.pct + "%"
+                        font.pixelSize: Ui.menuFontSize
+                    }
+                    Txt {
+                        visible: popup.bar.watts > 0
+                        text: popup.bar.watts.toFixed(1) + "W"
+                        color: Ui.gray
+                        font.bold: false
+                        font.pixelSize: Ui.menuFontSize
+                    }
+                }
+                // UPower's estimate from the averaged rate; 0 while it has no estimate yet
+                Txt {
+                    readonly property var dev: UPower.displayDevice
+                    readonly property bool charging: dev.state === UPowerDeviceState.Charging
+                    readonly property real secs: charging ? dev.timeToFull : dev.timeToEmpty
+
+                    text: secs > 0 ? Math.floor(secs / 3600) + "h " + Math.floor(secs % 3600 / 60) + "m " + (charging ? "to full" : "left")
+                        : UPowerDeviceState.toString(dev.state)
+                    color: Ui.gray
+                    font.bold: false
+                    font.pixelSize: Ui.menuFontSize
+                }
+            }
+
+            Item {
+                Layout.fillWidth: true
             }
 
             Repeater {
