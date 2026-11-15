@@ -3,7 +3,6 @@
 {
   stylix.targets = {
     rofi.enable = false;
-    hyprlock.enable = false;
     # chromium.enable = false;
     firefox.enable = false;
     librewolf.enable = false;

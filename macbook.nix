@@ -97,13 +97,37 @@ in
   # sudo command), XDG_DATA_DIRS, locales
   targets.genericLinux.enable = true;
 
-  # A Nix-built hyprlock can't authenticate through Fedora's PAM; hyprlock comes from dnf,
-  # its config still comes from here
-  programs.hyprlock.package = null;
+  # nixpkgs' pam_unix runs NixOS's /run/wrappers/bin/unix_chkpwd; the lock screen's PAM runs
+  # Fedora's instead. Quickshell and linux-pam build locally
+  programs.quickshell.package = pkgs.quickshell.override {
+    pam = pkgs.linux-pam.overrideAttrs (old: {
+      postPatch = old.postPatch + ''
+        substituteInPlace modules/module-meson.build \
+          --replace-fail "'/run/wrappers/bin/unix_chkpwd'" "'/usr/sbin/unix_chkpwd'"
+      '';
+    });
+  };
 
   # Fedora's xdg-desktop-portal doesn't look in the Nix profile
   xdg.configFile."xdg-desktop-portal/mango-portals.conf".source =
     "${config.wayland.windowManager.mango.package}/share/xdg-desktop-portal/mango-portals.conf";
+
+  # Nix commands for user services (hypridle, quickshell)
+  systemd.user.sessionVariables.PATH = "${config.home.profileDirectory}/bin:$PATH";
+
+  # Fedora's mate-polkit; its autostart entry is MATE-only
+  systemd.user.services.polkit-mate-agent = {
+    Unit = {
+      Description = "MATE polkit authentication agent";
+      PartOf = [ "graphical-session.target" ];
+      After = [ "graphical-session.target" ];
+    };
+    Service = {
+      ExecStart = "/usr/libexec/polkit-mate-authentication-agent-1";
+      Restart = "on-failure";
+    };
+    Install.WantedBy = [ "graphical-session.target" ];
+  };
 
   services.playerctld.enable = true;
 

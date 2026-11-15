@@ -82,6 +82,9 @@
   # [pipewire] rtkit is optional but recommended
   security.rtkit.enable = true;
 
+  # The quickshell lock screen (config/quickshell/dotfiles/Lock.qml) checks passwords with it
+  security.pam.services.quickshell-lock = { };
+
   services = {
     gnome.gnome-keyring.enable = true;
     gnome.gcr-ssh-agent.enable = false; # it conflicts with programs.ssh.startAgent

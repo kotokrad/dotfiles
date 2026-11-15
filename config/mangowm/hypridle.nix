@@ -9,20 +9,30 @@ in
       enable = true;
       settings = {
         general = {
-          lock_cmd = "pidof hyprlock || hyprlock";
-          before_sleep_cmd = "loginctl lock-session";
+          lock_cmd = "quickshell-lock";
+          inhibit_sleep = 0;
           after_sleep_cmd = "${wlopm} --on '*'";
           ignore_dbus_inhibit = false;
           };
         listener = [
           {
+            timeout = 60;
+            on-timeout = "brightnessctl -s set 10%";
+            on-resume = "brightnessctl -r";
+          }
+          {
             timeout = 120;
-            on-timeout = "pidof hyprlock || hyprlock --grace 5";
+            on-timeout = "quickshell-lock 5";
           }
           {
             timeout = 300;
             on-timeout = "${wlopm} --off '*'";
             on-resume = "${wlopm} --on '*'";
+          }
+          {
+            # Only on battery
+            timeout = 600;
+            on-timeout = "${pkgs.systemd}/bin/systemd-ac-power || systemctl suspend";
           }
         ];
       };

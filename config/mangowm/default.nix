@@ -66,7 +66,6 @@ in {
   imports = [
     inputs.mango.hmModules.mango
     ./hypridle.nix
-    ./hyprlock.nix
   ];
 
   home.packages = with pkgs; [

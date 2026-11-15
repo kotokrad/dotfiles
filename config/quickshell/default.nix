@@ -1,6 +1,7 @@
 { config, pkgs, ... }:
 
 {
+  imports = [ ./lock.nix ];
   # Bar, quick settings, VPN menu, OSD and notifications for mango
   programs.quickshell = {
     enable = true;
