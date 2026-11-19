@@ -1,0 +1,18 @@
+--- a/src/wl_window.c
++++ b/src/wl_window.c
+@@ -700,7 +700,6 @@
+ 
+   if (new_scale != window->scale) {
+     window->scale = new_scale;
+-    wl_surface_set_buffer_scale(window->wl_surface, window->scale);
+     size_t buffer_width = window->width * window->scale;
+     size_t buffer_height = window->height * window->scale;
+     wl_egl_window_resize(window->egl_window, buffer_width, buffer_height, 0, 0);
+@@ -1074,6 +1073,7 @@
+ void imv_window_present(struct imv_window *window)
+ {
+   if (window->xdg_configured) {
++    wl_surface_set_buffer_scale(window->wl_surface, window->scale);
+     eglSwapBuffers(window->egl_display, window->egl_surface);
+   }
+ }

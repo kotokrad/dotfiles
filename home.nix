@@ -213,6 +213,11 @@ in
     ./config/quickshell
   ];
 
+  wayland.windowManager.mango.extraConfig = ''
+    monitor_rule = name:^eDP-1$,scale:2,x:560,y:1440
+    monitor_rule = make:Dell Inc.,model:DELL U3223QE,scale:1.5,x:0,y:0
+  '';
+
   home = {
     username = "kotokrad";
     homeDirectory = "/home/kotokrad";
@@ -223,9 +228,8 @@ in
       "$HOME/.local/bin"
       "$HOME/.bun/bin"
     ];
-    # docker-compose talks to rootless podman (its user socket is on by default)
     sessionVariables.DOCKER_HOST = "unix://$XDG_RUNTIME_DIR/podman/podman.sock";
-    shellAliases.nix-switch = "sudo nixos-rebuild switch --flake '/home/kotokrad/nixos-config#'"; # rest in config/fish.nix
+    shellAliases.nix-switch = "sudo nixos-rebuild switch --flake '/home/kotokrad/nixos-config#'";
   };
 
   programs = {
@@ -235,6 +239,16 @@ in
     };
 
     uv.enable = true;
+
+    mpv.config = {
+      profile = "gpu-hq";
+      scale = "ewa_lanczossharp";
+      cscale = "ewa_lanczossharp";
+      video-sync = "display-resample";
+      interpolation = true;
+      tscale = "oversample";
+      vo = "gpu";
+    };
 
     # Fix colors on the Xiaomi projector (desktop only: it's an amdgpu problem)
     # amdgpu sends full-range RGB, projector's EDID can't signal range so it assumes 16-235
@@ -268,7 +282,6 @@ in
     enable = true;
     theme = "dark:nobg";
   };
-  services.hyprpolkitagent.enable = true;
   # services.opensnitch-ui.enable = true;
   # services.kdeconnect = {
   #   enable = true;

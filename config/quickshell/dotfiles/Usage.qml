@@ -38,7 +38,6 @@ Island {
     Tooltip {
         target: usage
         text: usage.source.error || "Week: " + usage.week + "%"
-        visible: usage.hovered && !panel.visible
     }
 
     Dropdown {
@@ -86,7 +85,7 @@ Island {
                     }
                     Txt {
                         Layout.preferredWidth: 100
-                        text: limit.pct > 0 ? "resets " + usage.resetText(limit.modelData.w) : ""
+                        text: limit.modelData.w?.resetsAt > clock.date ? "resets " + usage.resetText(limit.modelData.w) : ""
                         color: Ui.gray
                     }
                 }

@@ -70,7 +70,7 @@ Dropdown {
                     readonly property bool charging: dev.state === UPowerDeviceState.Charging
                     readonly property real secs: charging ? dev.timeToFull : dev.timeToEmpty
 
-                    text: secs > 0 ? Math.floor(secs / 3600) + "h " + Math.floor(secs % 3600 / 60) + "m " + (charging ? "to full" : "left")
+                    text: secs > 0 ? Math.floor(secs / 3600) + "h " + Math.floor(secs % 3600 / 60) + "m " + (charging ? "until full" : "left")
                         : UPowerDeviceState.toString(dev.state)
                     color: Ui.gray
                     font.bold: false

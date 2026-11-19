@@ -47,7 +47,7 @@ Island {
                 target: icon
                 anchor.rect.y: (icon.height + Ui.height) / 2 + Ui.gap // the island's bottom edge, then the usual gap
                 text: [icon.modelData.tooltipTitle || icon.modelData.title, icon.modelData.tooltipDescription].filter(s => s).join("\n")
-                visible: mouse.containsMouse && text !== ""
+                visible: mouse.containsMouse && text !== "" && !Ui.dropdowns.some(d => d.visible)
             }
         }
     }

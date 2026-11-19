@@ -14,7 +14,9 @@ ShellRoot {
     ConnectionNotifications {
         notifications: notificationArea
     }
+    BatteryNotifications {}
     Osd {}
+    PolkitDialog {}
 
     IpcHandler {
         target: "shell"

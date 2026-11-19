@@ -25,6 +25,7 @@ PanelWindow {
     readonly property var battery: UPower.displayDevice
     // Draw on battery, charge rate when plugged in
     property real watts: 0
+    property real volts: 0
     readonly property real notchWidth: Ui.notch.screen === modelData.name ? Ui.notch.width : 0
     // Text room between the tags and the right islands: the row's margin, two gaps and the island's
     // padding
@@ -54,6 +55,7 @@ PanelWindow {
             const field = name => text().match(new RegExp(`^POWER_SUPPLY_${name}=(.*)$`, "m"))?.[1];
             const microwatts = field("POWER_NOW") ?? field("CURRENT_NOW") * field("VOLTAGE_NOW") / 1e6;
             bar.watts = Math.abs(microwatts) / 1e6;
+            bar.volts = field("VOLTAGE_NOW") / 1e6;
         }
     }
     Timer {
@@ -145,7 +147,6 @@ PanelWindow {
             Tooltip {
                 target: vpn
                 text: Vpn.location
-                visible: vpn.hovered && text !== "" && !vpnMenu.visible
             }
 
             Dropdown {
@@ -211,7 +212,6 @@ PanelWindow {
             Tooltip {
                 target: network
                 text: network.ip
-                visible: network.hovered && text !== "" && !netMenu.visible
             }
 
             Dropdown {
@@ -253,7 +253,6 @@ PanelWindow {
             Tooltip {
                 target: sound
                 text: bar.sink?.description ?? ""
-                visible: sound.hovered && text !== "" && !audioMenu.visible
             }
 
             Dropdown {
@@ -320,6 +319,8 @@ PanelWindow {
             id: status
             readonly property int pct: Math.round(bar.battery.percentage * 100)
             readonly property bool charging: bar.battery.state === UPowerDeviceState.Charging
+            // The gauge's last ~10% is a guess; the cutoff goes by voltage
+            readonly property bool showVolts: Ui.lowVoltage > 0 && !charging && pct < 15
 
             hoverable: true
             spacing: 10
@@ -335,7 +336,8 @@ PanelWindow {
             }
             Txt {
                 visible: bar.battery.isLaptopBattery
-                text: Ui.batteryIcon(status.pct, status.charging) + " " + status.pct + "%"
+                text: Ui.batteryIcon(status.pct, status.charging) + " "
+                    + (status.showVolts ? bar.volts.toFixed(1) + "V" : status.pct + "%")
                 color: status.charging ? Ui.fg : status.pct < 15 ? Ui.red : status.pct < 30 ? Ui.yellow : Ui.fg
             }
             Txt {
@@ -361,7 +363,6 @@ PanelWindow {
             Tooltip {
                 target: clockIsland
                 text: Qt.formatDateTime(clock.date, "dddd, d MMM yyyy")
-                visible: clockIsland.hovered && !calendar.visible
             }
 
             Calendar {

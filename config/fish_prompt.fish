@@ -14,6 +14,13 @@ function fish_prompt
 
     echo
 
+    # Hostname, only over SSH
+    if set -q SSH_CONNECTION
+        set_color -o magenta
+        echo -n (prompt_hostname)' '
+        set_color normal
+    end
+
     # Path from the repo root inside a repo, else from ~; last 3 parts
     set -l git (command git rev-parse --git-dir --show-toplevel 2>/dev/null)
     set -l dir (prompt_pwd -d 0)

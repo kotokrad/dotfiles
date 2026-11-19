@@ -11,10 +11,10 @@
 #   gnome-disk-utility                # needs Fedora's udisks + polkit
 #   brightnessctl pipewire-utils      # quickshell brightness OSD, audio profiles
 #   bluez tuned-ppd                   # quickshell Bluetooth and Power tiles
+#   avd-fw                            # video decoder firmware
 #   thunar gvfs tumbler               # a Nix Thunar can't load Fedora's gvfs (trash, MTP)
 #   thunar-archive-plugin file-roller # Thunar's Extract here / Create archive
-#   mate-polkit                       # polkit agent (setuid helper), started below
-#   gnome-keyring                     # unlocked at login through PAM
+#   gnome-keyring gnome-keyring-pam   # login.keyring unlocked at login through PAM
 #   xdg-desktop-portal-wlr xdg-desktop-portal-gtk fish
 #
 # Packages from their own repos
@@ -23,9 +23,11 @@
 # Commands
 #   sudo systemctl enable --now nix-daemon
 #   sudo systemctl enable --now bluetooth
+#   sudo systemctl enable --now polkit-agent-helper.socket  # quickshell's Nix polkit can't find the setuid helper
 #   chsh -s /usr/bin/fish
 #   sudo usermod -aG dialout $USER    # serial ports: tio, arduino-cli
 #   sudo grubby --update-kernel=ALL --args=appledrm.show_notch=1  # screen around the notch
+#   xdg-mime default librewolf-private.desktop x-scheme-handler/http x-scheme-handler/https text/html application/xhtml+xml
 #
 # Files
 #   /etc/modprobe.d/hid_apple.conf    # swap ctrl/fn, proper F-keys; apply with `sudo dracut -f`
@@ -39,6 +41,9 @@
 #     power-saver=battery-saver
 #   /etc/pam.d/quickshell-lock        # lock screen password check
 #     auth include login
+#   /etc/systemd/logind.conf.d/power-key.conf  # then sudo systemctl kill -s HUP systemd-logind
+#     [Login]
+#     HandlePowerKey=suspend
 #   /usr/share/wayland-sessions/mango.desktop
 #     [Desktop Entry]
 #     Name=Mango
@@ -60,8 +65,12 @@ let
     vlc
     mate-calc
     mousepad
-    imv                         # image viewer
     xfce4-taskmanager
+    brave
+    prusa-slicer
+    orca-slicer
+    filezilla
+    audacious
 
   # Utility
     ripgrep
@@ -80,6 +89,8 @@ let
     rustup
     go
     pgweb
+    nodejs
+    bun
 
   # Embedded
     arduino-cli
@@ -129,6 +140,11 @@ in
     homeDirectory = "/home/kotokrad";
     stateVersion = "26.11";
     packages = packages ++ [ (pkgs.lib.hiPrio hyprpicker) ];
+    sessionPath = [
+      "$HOME/.local/bin"
+      "$HOME/.cargo/bin"
+      "$HOME/.bun/bin"
+    ];
     shellAliases.nix-switch = "home-manager switch --flake '/home/kotokrad/nixos-config#macbook'";
   };
 
@@ -150,10 +166,20 @@ in
     });
   };
 
+  programs.imv = {
+    enable = true;
+    # FIXME: remove after the next imv update if it fixes the crash
+    package = pkgs.imv.overrideAttrs (old: {
+      patches = (old.patches or [ ]) ++ [ ./patches/imv-buffer-scale.patch ];
+    });
+    settings.binds."<Escape>" = "quit";
+  };
+
   # The screen reaches up around the notch (appledrm.show_notch, see the top)
   quickshell.settings = {
     barHeight = 26;
-    notch = { screen = "eDP-1"; width = 154; }; # logical px
+    notch = { screen = "eDP-1"; width = 154; };
+    lowVoltage = 10.4;
   };
 
   # apple-drm has no gamma LUT, and its CTM costs battery.
@@ -170,7 +196,9 @@ in
       });
 
     extraConfig = ''
+      monitor_rule = name:^eDP-1$,scale:2,x:0,y:0
       trackpad_scroll_factor = 1.0
+      xkb_rules_options = grp:lalt_lshift_toggle,caps:escape,ctrl:ralt_rctrl
     '';
   };
 
@@ -182,19 +210,8 @@ in
   # Nix commands for user services (hypridle, quickshell)
   systemd.user.sessionVariables.PATH = "${config.home.profileDirectory}/bin:$PATH";
 
-  # Fedora's mate-polkit; its autostart entry is MATE-only
-  systemd.user.services.polkit-mate-agent = {
-    Unit = {
-      Description = "MATE polkit authentication agent";
-      PartOf = [ "graphical-session.target" ];
-      After = [ "graphical-session.target" ];
-    };
-    Service = {
-      ExecStart = "/usr/libexec/polkit-mate-authentication-agent-1";
-      Restart = "on-failure";
-    };
-    Install.WantedBy = [ "graphical-session.target" ];
-  };
+  # Fedora's gcr-ssh-agent exports its socket only to systemd, which mango doesn't import
+  home.sessionVariables.SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/gcr/ssh";
 
   services.playerctld.enable = true;
 

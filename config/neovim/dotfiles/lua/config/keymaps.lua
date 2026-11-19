@@ -40,6 +40,8 @@ vim.keymap.set("v", "<C-k>", "<cmd>m .-2<CR>", { desc = "Move line up" })
 vim.keymap.set("v", "<M-c>", "\"+y", { desc = "Copy into system buffer" })
 vim.keymap.set("i", "<M-c>", "<nop>" )
 vim.keymap.set("n", "<M-c>", "V\"+y" )
+vim.keymap.set("v", "<D-c>", "\"+y", { desc = "Copy into system buffer" })
+vim.keymap.set("n", "<D-c>", "V\"+y" )
 
 -- Subword motions
 vim.keymap.set({ "n", "o", "x" }, "<localleader>w", "<cmd>lua require('spider').motion('w')<CR>", { desc = "Subword motion w"})

@@ -61,15 +61,6 @@
     };
 
     config = {
-      # HQ
-      profile = "gpu-hq";
-      scale = "ewa_lanczossharp";
-      cscale = "ewa_lanczossharp";
-      video-sync = "display-resample";
-      interpolation = true;
-      tscale = "oversample";
-      vo = "gpu";
-
       # Clearer downmixing to stereo speakers/headphones
       audio-channels = 2;
 

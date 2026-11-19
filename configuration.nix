@@ -280,26 +280,6 @@
   programs.nix-ld.enable = true;
   programs.nix-index-database.comma.enable = true;
 
-  # CVE-2026-111497 stopgap, remove once brotli 1.2.1 is in nixos-unstable
-  system.replaceDependencies.replacements =
-    let
-      fix = b: b.overrideAttrs (old: {
-        patches = (old.patches or [ ]) ++ [
-          (pkgs.fetchurl {
-            url = "https://github.com/google/brotli/commit/0ed4268a4401abcb4472096340477cf4af7d1a2b.patch?full_index=1";
-            hash = "sha256-1vliUJAAIj3vcGKVgim9CEV+XgMuftDR2U+3kLBUsfw=";
-          })
-        ];
-      });
-      new = fix pkgs.brotli;
-      new32 = fix pkgs.pkgsi686Linux.brotli;
-    in [
-      { oldDependency = pkgs.brotli.out; newDependency = new.out; }
-      { oldDependency = pkgs.brotli.lib; newDependency = new.lib; }
-      { oldDependency = pkgs.pkgsi686Linux.brotli.lib; newDependency = new32.lib; }
-    ];
-
-
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
   # on your system were taken. It‘s perfectly fine and recommended to leave

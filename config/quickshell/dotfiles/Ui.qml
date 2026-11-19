@@ -60,9 +60,11 @@ Singleton {
                 property string screen: ""
                 property int width: 0
             }
+            property real lowVoltage: 0
         }
     }
     readonly property JsonObject notch: settings.notch
+    readonly property real lowVoltage: settings.lowVoltage
 
     readonly property string font: "JetBrainsMono Nerd Font Propo"
     readonly property int fontSize: 10

@@ -186,7 +186,7 @@ Island {
         stdout: StdioCollector {
             onStreamFinished: {
                 const gb = Number(text.trim().split("\n").pop()) / 1e9;
-                sensors.disk = gb.toFixed(gb >= 100 ? 0 : gb >= 10 ? 1 : 2) + "GB";
+                sensors.disk = gb.toFixed(gb >= 100 ? 0 : gb >= 10 ? 1 : 2) + " GB";
             }
         }
     }

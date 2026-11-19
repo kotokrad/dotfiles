@@ -10,7 +10,7 @@ PopupWindow {
     implicitWidth: label.implicitWidth + 16
     implicitHeight: label.implicitHeight + 10
     color: "transparent"
-    visible: target.hovered && text !== ""
+    visible: target.hovered && text !== "" && !Ui.dropdowns.some(d => d.visible)
 
     Rectangle {
         anchors.fill: parent
