@@ -6,16 +6,28 @@
   visibility: collapse;
 }
 
-/* Remove the border and rounded corner around the sidebar */
+/* Sidebar
+** ====================================== */
+
+/* Remove the border, rounded corner and left padding around the sidebar */
 #sidebar-box {
   border: none !important;
+  padding-inline-start: 0 !important;
   --sidebar-box-start-start-radius: 0 !important;
   --sidebar-box-start-end-radius: 0 !important;
 }
 
-/* Hide the sidebar header on extension panels */
-#webextpanels-window #sidebar-panel-header {
+/* Hide the sidebar header (title, panel switcher, close) */
+#sidebar-panel-header {
   display: none !important;
+}
+
+/* Content area
+** ====================================== */
+
+/* Unstyled pages (.txt) are transparent over this; Nova makes it dark in private windows */
+:root {
+  --tabpanel-background-color: white !important;
 }
 
 /* Remove items from context menu

@@ -11,6 +11,7 @@
 #   gnome-disk-utility                # needs Fedora's udisks + polkit
 #   brightnessctl pipewire-utils      # quickshell brightness OSD, audio profiles
 #   bluez tuned-ppd                   # quickshell Bluetooth and Power tiles
+#   blueman                           # pairing agent, Bluetooth list's More…
 #   avd-fw                            # video decoder firmware
 #   thunar gvfs tumbler               # a Nix Thunar can't load Fedora's gvfs (trash, MTP)
 #   thunar-archive-plugin file-roller # Thunar's Extract here / Create archive
@@ -23,11 +24,14 @@
 # Commands
 #   sudo systemctl enable --now nix-daemon
 #   sudo systemctl enable --now bluetooth
+#   gsettings set org.blueman.general plugin-list "['!ConnectionNotifier']"
 #   sudo systemctl enable --now polkit-agent-helper.socket  # quickshell's Nix polkit can't find the setuid helper
 #   chsh -s /usr/bin/fish
 #   sudo usermod -aG dialout $USER    # serial ports: tio, arduino-cli
 #   sudo grubby --update-kernel=ALL --args=appledrm.show_notch=1  # screen around the notch
 #   xdg-mime default librewolf-private.desktop x-scheme-handler/http x-scheme-handler/https text/html application/xhtml+xml
+#   sudo tailscale set --netfilter-mode=off  # Mullvad + Tailscale, as in vpn.nix
+#   sudo systemctl enable --now mullvad-tailscale
 #
 # Files
 #   /etc/modprobe.d/hid_apple.conf    # swap ctrl/fn, proper F-keys; apply with `sudo dracut -f`
@@ -51,6 +55,39 @@
 #     DesktopNames=mango;wlroots
 #     Exec=/home/kotokrad/.nix-profile/bin/mango
 #     Type=Application
+#   /etc/firewalld/firewalld.conf     # then sudo systemctl restart firewalld
+#     IPv6_rpfilter=loose
+#   /etc/nftables/mullvad-tailscale.nft  # vpn.nix's table; nftables.service conflicts with firewalld
+#     destroy table inet mullvad-tailscale
+#     table inet mullvad-tailscale {
+#       chain output {
+#         type route hook output priority -100; policy accept;
+#         meta mark 0x00080000 ct mark set 0x00000f41 meta mark set 0x6d6f6c65 return
+#         ip daddr 100.64.0.0/26 return
+#         ip daddr { 100.64.0.0/10, 10.10.0.0/16 } ct mark set 0x00000f41 meta mark set 0x6d6f6c65
+#         ip6 daddr fd7a:115c:a1e0::/48 ct mark set 0x00000f41 meta mark set 0x6d6f6c65
+#       }
+#       chain input {
+#         type filter hook input priority -100; policy accept;
+#         iifname "tailscale0" ct mark set 0x00000f41 meta mark set 0x6d6f6c65
+#       }
+#     }
+#   /etc/systemd/system/mullvad-tailscale.service  # the nft table + vpn.nix's tailscale-direct rules
+#     [Unit]
+#     Description=Mullvad + Tailscale side by side
+#     [Service]
+#     Type=oneshot
+#     RemainAfterExit=yes
+#     ExecStart=nft -f /etc/nftables/mullvad-tailscale.nft
+#     ExecStart=ip -4 rule add fwmark 0x6d6f6c65 ipproto udp sport 41641 lookup main pref 5260
+#     ExecStart=ip -6 rule add fwmark 0x6d6f6c65 ipproto udp sport 41641 lookup main pref 5260
+#     ExecStart=ip -4 rule add to 10.10.0.0/16 lookup main suppress_prefixlength 0 pref 5265
+#     ExecStop=-nft destroy table inet mullvad-tailscale
+#     ExecStop=-ip -4 rule del pref 5260
+#     ExecStop=-ip -6 rule del pref 5260
+#     ExecStop=-ip -4 rule del pref 5265
+#     [Install]
+#     WantedBy=multi-user.target
 #
 # After the first switch
 #   run the sudo GPU setup command it prints
@@ -103,6 +140,8 @@ let
     networkmanagerapplet        # nm-connection-editor for the network menu
     nerd-fonts.iosevka          # foot
     nerd-fonts.jetbrains-mono   # rofi, quickshell
+    noto-fonts
+    noto-fonts-cjk-sans
     papirus-icon-theme          # rofi, quickshell tray
 ];
 

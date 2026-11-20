@@ -6,7 +6,8 @@
     settings = {
       main = {
         # font = lib.mkForce "FantasqueSansM Nerd Font:size=10:antialias=true:autohint=true";
-        font = lib.mkForce "Iosevka Nerd Font Mono:size=9.5:antialias=true:autohint=true";
+        font = lib.mkForce "Iosevka Nerd Font Mono:size=9:antialias=true:autohint=true";
+        line-height = "15px";
         selection-target = "clipboard";
       };
       environment = {

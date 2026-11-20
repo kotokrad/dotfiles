@@ -18,13 +18,13 @@ Singleton {
     readonly property color yellow: "#fabd2f"
     readonly property color red: "#fb4934"
 
-    // Top row gruvbox's bright tones, bottom row Everforest's own
+    // Top row gruvbox's bright tones (orange and green from Gruvbox Material), bottom row Everforest's own
     readonly property var accents: [
-        { name: "Orange", color: "#fe8019" },
+        { name: "Orange", color: "#e78a4e" },
         { name: "Aqua", color: "#8ec07c" },
         { name: "Blue", color: "#83a598" },
         { name: "Purple", color: "#d3869b" },
-        { name: "Green", color: "#b8bb26" },
+        { name: "Green", color: "#a9b665" },
         { name: "Soft orange", color: "#e69875" },
         { name: "Soft aqua", color: "#83c092" },
         { name: "Soft blue", color: "#7fbbb3" },
