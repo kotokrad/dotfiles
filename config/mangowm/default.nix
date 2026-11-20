@@ -9,9 +9,12 @@
     slurp
     wl-clipboard
     hyprpicker
+    playerctl
+    pavucontrol
   ];
 
   services.awww.enable = true;
+  services.playerctld.enable = true;
 
   wayland.windowManager.mango = {
     enable = true;

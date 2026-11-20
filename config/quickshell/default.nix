@@ -22,7 +22,13 @@ in
       };
     };
 
-    home.packages = [ pkgs.qrencode ]; # Wi-Fi password QR code in the network menu
+    home.packages = with pkgs; [
+      qrencode                    # Wi-Fi password QR code in the network menu
+      networkmanagerapplet        # nm-connection-editor
+      pavucontrol
+      nerd-fonts.jetbrains-mono
+      papirus-icon-theme
+    ];
 
     systemd.user.services.quickshell = {
       Unit = {

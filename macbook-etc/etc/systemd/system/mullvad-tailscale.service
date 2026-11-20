@@ -1,0 +1,17 @@
+[Unit]
+Description=Mullvad + Tailscale side by side
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=nft -f /etc/nftables/mullvad-tailscale.nft
+ExecStart=ip -4 rule add fwmark 0x6d6f6c65 ipproto udp sport 41641 lookup main pref 5260
+ExecStart=ip -6 rule add fwmark 0x6d6f6c65 ipproto udp sport 41641 lookup main pref 5260
+ExecStart=ip -4 rule add to 10.10.0.0/16 lookup main suppress_prefixlength 0 pref 5265
+ExecStop=-nft destroy table inet mullvad-tailscale
+ExecStop=-ip -4 rule del pref 5260
+ExecStop=-ip -6 rule del pref 5260
+ExecStop=-ip -4 rule del pref 5265
+
+[Install]
+WantedBy=multi-user.target

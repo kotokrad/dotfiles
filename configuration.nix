@@ -95,7 +95,6 @@
     tumbler.enable = true;
     usbmuxd.enable = true;
     flatpak.enable = true;
-    playerctld.enable = true;
 
     avahi = {
       enable = true;
@@ -192,6 +191,11 @@
     extraOptions = ''
       experimental-features = nix-command flakes
     '';
+    gc = {
+      automatic = true;
+      dates = "weekly";
+      options = "--delete-older-than 7d";
+    };
   };
 
   # Fonts
@@ -253,13 +257,6 @@
   programs.appimage.enable = true;
   programs.appimage.binfmt = true;
 
-  programs.nh = {
-    enable = true;
-    clean.enable = true;
-    clean.extraArgs = "--keep-since 7d --keep 3";
-    flake = "/home/kotokrad/nixos-config";
-  };
-
   programs.thunar = {
     enable = true;
     plugins = with pkgs; [
@@ -278,7 +275,6 @@
   programs.pay-respects.enable = true;
   programs.wireshark.enable = true;
   programs.nix-ld.enable = true;
-  programs.nix-index-database.comma.enable = true;
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions

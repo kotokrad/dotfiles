@@ -1,0 +1,14 @@
+destroy table inet mullvad-tailscale
+table inet mullvad-tailscale {
+  chain output {
+    type route hook output priority -100; policy accept;
+    meta mark 0x00080000 ct mark set 0x00000f41 meta mark set 0x6d6f6c65 return
+    ip daddr 100.64.0.0/26 return
+    ip daddr { 100.64.0.0/10, 10.10.0.0/16 } ct mark set 0x00000f41 meta mark set 0x6d6f6c65
+    ip6 daddr fd7a:115c:a1e0::/48 ct mark set 0x00000f41 meta mark set 0x6d6f6c65
+  }
+  chain input {
+    type filter hook input priority -100; policy accept;
+    iifname "tailscale0" ct mark set 0x00000f41 meta mark set 0x6d6f6c65
+  }
+}

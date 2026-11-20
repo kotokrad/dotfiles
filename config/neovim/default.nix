@@ -5,14 +5,13 @@
     enable       = true;
     vimAlias     = true;
     vimdiffAlias = true;
-    withNodeJs   = true;
-    withPython3  = true;
-    withRuby     = true;
-    extraLuaPackages = ps: [ ps.jsregexp ]; # used in `luasnip` snippets
+    withNodeJs   = false;
+    withPython3  = false;
+    withRuby     = false;
+    defaultEditor = true;
   };
 
   home.packages = with pkgs; [
-    glib # nvim-tree uses `gio trash`
     tree-sitter # nvim-treesitter (main) builds parsers with it
   ];
 

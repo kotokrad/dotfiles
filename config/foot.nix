@@ -1,6 +1,8 @@
-{ lib, ... }:
+{ lib, pkgs, ... }:
 
 {
+  home.packages = [ pkgs.nerd-fonts.iosevka ];
+
   programs.foot = {
     enable = true;
     settings = {

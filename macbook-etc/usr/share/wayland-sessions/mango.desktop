@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Mango
+Comment=mango WM
+DesktopNames=mango;wlroots
+Exec=/home/kotokrad/.nix-profile/bin/mango
+Type=Application

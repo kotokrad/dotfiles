@@ -1,10 +1,15 @@
-{ config, ... }:
+{ config, pkgs, ... }:
 
 let
   c = config.lib.stylix.colors;
   inherit (config.lib.formats.rasi) mkLiteral;
 in
 {
+  home.packages = with pkgs; [
+    nerd-fonts.jetbrains-mono
+    papirus-icon-theme
+  ];
+
   programs.rofi = {
     enable = true;
     settings = {
