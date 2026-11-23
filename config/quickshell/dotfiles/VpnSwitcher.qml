@@ -1,4 +1,3 @@
-// Unused
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
@@ -10,15 +9,15 @@ PanelWindow {
     property int index: 0
 
     function pick(i) {
-        Vpn.set(Vpn.options[i][0]);
-        Vpn.switcherOpen = false;
+        Vpn.toggle(Vpn.options[i][0]);
+        visible = false;
     }
 
-    visible: Vpn.switcherOpen
+    visible: false
     onVisibleChanged: {
         if (visible) {
             Ui.closeDropdowns();
-            index = Math.max(0, Vpn.options.findIndex(o => o[0] === Vpn.active));
+            index = 0;
         }
     }
     screen: Mango.focusedScreen
@@ -31,20 +30,20 @@ PanelWindow {
     IpcHandler {
         target: "vpn"
         function toggle(): void {
-            Vpn.switcherOpen = !Vpn.switcherOpen;
+            switcher.visible = !switcher.visible;
         }
     }
 
     Connections {
         target: Mango
         function onActiveTagsChanged() {
-            Vpn.switcherOpen = false;
+            switcher.visible = false;
         }
     }
 
     MouseArea {
         anchors.fill: parent
-        onClicked: Vpn.switcherOpen = false
+        onClicked: switcher.visible = false
     }
 
     Rectangle {
@@ -68,14 +67,14 @@ PanelWindow {
             focus: true
             Keys.onPressed: e => {
                 if (e.key === Qt.Key_Escape)
-                    Vpn.switcherOpen = false;
+                    switcher.visible = false;
                 else if (e.key === Qt.Key_Up || e.key === Qt.Key_K)
-                    switcher.index = (switcher.index + 2) % 3;
+                    switcher.index = (switcher.index + Vpn.options.length - 1) % Vpn.options.length;
                 else if (e.key === Qt.Key_Down || e.key === Qt.Key_J || e.key === Qt.Key_Tab)
-                    switcher.index = (switcher.index + 1) % 3;
+                    switcher.index = (switcher.index + 1) % Vpn.options.length;
                 else if (e.key === Qt.Key_Return || e.key === Qt.Key_Enter)
                     switcher.pick(switcher.index);
-                else if (e.key >= Qt.Key_1 && e.key <= Qt.Key_3)
+                else if (e.key >= Qt.Key_1 && e.key < Qt.Key_1 + Vpn.options.length)
                     switcher.pick(e.key - Qt.Key_1);
             }
 
@@ -92,7 +91,7 @@ PanelWindow {
                 Entry {
                     required property var modelData
                     required property int index
-                    current: modelData[0] !== "" && Vpn.active === modelData[0]
+                    current: Vpn[modelData[0]]
                     iconSpace: true
                     icon: current ? "\u{f00c}" : ""
                     text: modelData[1]

@@ -6,7 +6,6 @@ Fedora setup, outside home-manager
 Packages (dnf install)
   nix nix-daemon                    # nix package manager
   gcc make                          # treesitter parsers, blink.cmp, rust/cgo linking
-  tcpdump nmap                      # run with sudo, which doesn't search ~/.nix-profile
   android-tools                     # adb's udev rules
   gnome-disk-utility                # needs Fedora's udisks + polkit
   brightnessctl pipewire-utils      # quickshell brightness OSD, audio profiles
@@ -21,10 +20,16 @@ Packages (dnf install)
 Packages from their own repos
   mullvad-vpn tailscale
 
+Built from source
+  keyd (fn+hjkl arrows): not in Fedora, and SELinux won't let systemd run it from /nix/store
+    git clone -b v2.6.0 https://github.com/rvaiya/keyd && cd keyd
+    make && sudo make install       # /usr/local
+    sudo systemctl enable --now keyd
+
 Commands
   sudo systemctl enable --now nix-daemon
   sudo systemctl enable --now bluetooth
-  gsettings set org.blueman.general plugin-list "['!ConnectionNotifier']"
+  gsettings set org.blueman.general plugin-list "['!ConnectionNotifier']" # disable bluetooth notifications
   sudo systemctl enable --now polkit-agent-helper.socket  # quickshell's Nix polkit can't find the setuid helper
   chsh -s /usr/bin/fish
   sudo usermod -aG dialout $USER    # serial ports: tio, arduino-cli
@@ -35,8 +40,11 @@ Commands
 
 Files:
   sudo cp -r ~/nixos-config/macbook-etc/. /
+  sudo chmod 0440 /etc/sudoers.d/nix-profile # sudo also finds ~/.nix-profile binaries (last in secure_path),
+                                             # and sudo'd GUI apps keep WAYLAND_DISPLAY
   sudo dracut -f                             # hid_apple.conf: swap ctrl/fn, proper F-keys
   sudo systemctl kill -s HUP systemd-logind  # power-key.conf
+  sudo keyd reload                           # keyd/default.conf
   sudo systemctl daemon-reload               # mullvad-tailscale.service: vpn.nix's nft table and
                                              # tailscale-direct rules (nftables.service conflicts with firewalld)
 

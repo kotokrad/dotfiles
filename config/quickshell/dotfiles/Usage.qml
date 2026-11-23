@@ -42,6 +42,7 @@ Island {
 
     Dropdown {
         id: panel
+        objectName: usage.source.objectName
         target: usage
         screen: usage.bar.screen
         onVisibleChanged: if (visible) usage.source.refresh()

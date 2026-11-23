@@ -6,6 +6,7 @@ import Quickshell.Io
 // The endpoint behind Claude Code's /usage (internal, may change)
 Singleton {
     id: claude
+    objectName: "claude"
     property var usage: null
     property date updated
     property date tried

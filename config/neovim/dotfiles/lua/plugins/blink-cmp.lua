@@ -3,12 +3,8 @@ return {
   -- optional: provides snippets for the snippet source
   dependencies = { 'rafamadriz/friendly-snippets' },
 
-  -- use a release tag to download pre-built binaries
   version = '1.*',
-  -- AND/OR build from source, requires nightly: https://rust-lang.github.io/rustup/concepts/channels.html#working-with-nightly-rust
-  build = 'cargo build --release',
-  -- If you use nix, you can build from source using latest nightly rust with:
-  -- build = 'nix run .#build-plugin',
+  build = 'env RUSTC_BOOTSTRAP=1 cargo build --release', -- nightly features on stable rust
 
   ---@module 'blink.cmp'
   ---@type blink.cmp.Config
@@ -50,7 +46,10 @@ return {
     -- when the Rust fuzzy matcher is not available, by using `implementation = "prefer_rust"`
     --
     -- See the fuzzy documentation for more information
-    fuzzy = { implementation = "prefer_rust_with_warning" }
+    fuzzy = {
+      implementation = "prefer_rust_with_warning",
+      prebuilt_binaries = { download = false },
+    }
   },
   opts_extend = { "sources.default" }
 }

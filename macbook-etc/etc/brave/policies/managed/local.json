@@ -1,0 +1,20 @@
+{
+  "BraveRewardsDisabled": true,
+  "BraveWalletDisabled": true,
+  "BraveAIChatEnabled": false,
+  "BraveLocalAIEnabled": false,
+  "BraveNewsDisabled": true,
+  "BraveVPNDisabled": true,
+  "BraveTalkDisabled": true,
+  "TorDisabled": true,
+  "BravePlaylistEnabled": false,
+  "BraveWaybackMachineEnabled": false,
+  "BraveP3AEnabled": false,
+  "BraveStatsPingEnabled": false,
+  "BraveWebDiscoveryEnabled": false,
+  "MetricsReportingEnabled": false,
+  "TranslateEnabled": false,
+  "EnableMediaRouter": false,
+  "PromotionsEnabled": false,
+  "CommandLineFlagSecurityWarningsEnabled": false
+}

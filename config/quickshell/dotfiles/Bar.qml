@@ -135,13 +135,18 @@ PanelWindow {
 
         Island {
             id: vpn
-            readonly property string names: [Vpn.mullvad ? "mullvad" : "", Vpn.tailscale ? "ts" : ""].filter(s => s).join(" + ")
+            readonly property bool off: !Vpn.mullvad && !Vpn.tailscale
             hoverable: true
-            color: names === "" ? (hovered ? Qt.lighter(Ui.yellow, 1.15) : Ui.yellow) : hovered ? Ui.bg2 : panelOpen ? Ui.bg1 : Ui.bg0
+            color: off ? (hovered ? Qt.lighter(Ui.yellow, 1.15) : Ui.yellow) : hovered ? Ui.bg2 : panelOpen ? Ui.bg1 : Ui.bg0
             onClicked: vpnMenu.visible = !vpnMenu.visible
             Txt {
-                text: "\u{f0582} " + (vpn.names || "disconnected")
-                color: vpn.names === "" ? Ui.bg : Ui.fg
+                text: vpn.off ? "\u{f0582} disconnected" : "\u{f0582}"
+                color: vpn.off ? Ui.bg : Vpn.mullvad ? Ui.fg : Ui.bg3
+            }
+            Txt {
+                visible: !vpn.off
+                text: "\u{f15fc}"
+                color: Vpn.tailscale ? Ui.fg : Ui.bg3
             }
 
             Tooltip {
@@ -152,6 +157,7 @@ PanelWindow {
             Dropdown {
                 id: vpnMenu
                 target: vpn
+                objectName: "vpn"
                 screen: bar.screen
 
                 ColumnLayout {
@@ -164,6 +170,7 @@ PanelWindow {
                             required property var modelData
                             title: modelData[1]
                             on: Vpn[modelData[0]]
+                            pending: Vpn[modelData[0] + "Pending"]
                             onToggled: Vpn.toggle(modelData[0])
                         }
                     }
@@ -217,6 +224,7 @@ PanelWindow {
             Dropdown {
                 id: netMenu
                 target: network
+                objectName: "network"
                 screen: bar.screen
                 onVisibleChanged: if (visible) netContent.refresh()
 
@@ -257,6 +265,7 @@ PanelWindow {
 
             Dropdown {
                 id: audioMenu
+                objectName: "sound"
                 target: sound
                 screen: bar.screen
 
@@ -343,7 +352,7 @@ PanelWindow {
             Txt {
                 visible: bar.battery.isLaptopBattery && bar.watts > 0
                 text: bar.watts.toFixed(1) + "W"
-                color: Ui.gray
+                color: status.charging ? Ui.green : Ui.gray
             }
         }
 

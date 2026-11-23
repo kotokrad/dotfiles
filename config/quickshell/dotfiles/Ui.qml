@@ -14,6 +14,7 @@ Singleton {
     readonly property color bg3: "#56635f"
     readonly property color fg: "#d3c6aa"
     readonly property color gray: "#859289"
+    readonly property color green: "#a9b665"
     // Warnings keep gruvbox's colors
     readonly property color yellow: "#fabd2f"
     readonly property color red: "#fb4934"

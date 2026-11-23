@@ -23,7 +23,7 @@ return {
     null_ls.setup({
       sources = {
         null_ls.builtins.formatting.prettierd,
-        null_ls.builtins.formatting.mix,
+        -- null_ls.builtins.formatting.mix,
       },
     })
 
@@ -69,9 +69,9 @@ return {
       on_attach = on_attach,
     })
 
-    vim.lsp.config('elixirls', {
-      cmd = { "elixir-ls" },
-    })
+    -- vim.lsp.config('elixirls', {
+    --   cmd = { "elixir-ls" },
+    -- })
 
     vim.lsp.config('emmet_ls', {
       filetypes = { "css", "html", "javascript", "javascriptreact", "typescriptreact" },
@@ -110,23 +110,6 @@ return {
     -- vim.lsp.handlers["textDocument/definition"] = require("lsputil.locations").definition_handler
     -- vim.lsp.handlers["textDocument/references"] = require("lsputil.locations").references_handler
 
-    -- Custom diagnostic signs
-    local signs = {
-      Error = " ",
-      Warn = " ",
-      Hint = "💡",
-      Info = " ",
-    }
-
-    for type, icon in pairs(signs) do
-      local hl = "DiagnosticSign" .. type
-      vim.fn.sign_define(hl, {
-        text = icon,
-        texthl = hl,
-        numhl = "",
-      })
-    end
-
     -- LSP notifications (instead of fidget.nvim)
     -- vim.api.nvim_create_autocmd('LspProgress', {
     --   callback = function(ev)
@@ -144,7 +127,7 @@ return {
 
 
     vim.lsp.enable('ts_ls')
-    vim.lsp.enable('elixirls')
+    -- vim.lsp.enable('elixirls')
     vim.lsp.enable('emmet_ls')
     vim.lsp.enable('rust_analyzer')
     vim.lsp.enable('zls')

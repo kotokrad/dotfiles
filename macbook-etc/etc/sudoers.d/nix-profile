@@ -1,0 +1,2 @@
+Defaults secure_path = /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/var/lib/snapd/snap/bin:/home/kotokrad/.nix-profile/bin
+Defaults env_keep += "WAYLAND_DISPLAY XDG_RUNTIME_DIR"

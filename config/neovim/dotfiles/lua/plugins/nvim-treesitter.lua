@@ -10,7 +10,12 @@ return {
       enable_autocmd = false,
     })
 
-    require('nvim-treesitter').install { 'all' }
+    require('nvim-treesitter').install {
+      'javascript', 'typescript', 'tsx', 'jsdoc', 'html', 'css',
+      'markdown', 'markdown_inline', 'toml', 'yaml', 'json', 'ini',
+      'zig', 'nix', 'qmljs', 'fish', 'bash', 'diff',
+      'lua', 'vim', 'vimdoc', 'query',
+    }
 
     -- local configs = require("nvim-treesitter.configs")
     -- configs.setup({

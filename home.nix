@@ -44,6 +44,10 @@
       tealdeer                    # (tldr) summary of a man page
       jq
       ffmpeg
+      lm_sensors
+      nmap
+      tcpdump
+      powertop
       gh
       sshpass
 
@@ -63,6 +67,7 @@
       gcc-arm-embedded
       tio
     ];
+
     sessionPath = [
       "$HOME/.local/bin"
       "$HOME/.cargo/bin"
@@ -95,6 +100,11 @@
   services.udiskie = {
     enable = true;
     automount = false;
+  };
+
+  services.tailscale-systray = {
+    enable = true;
+    theme = "dark:nobg";
   };
 
   xdg.userDirs = {

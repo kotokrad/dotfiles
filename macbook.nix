@@ -54,13 +54,20 @@ in
     });
   };
 
-  programs.imv = {
+  programs.swayimg = {
     enable = true;
-    # FIXME: remove after the next imv update if it fixes the crash
-    package = pkgs.imv.overrideAttrs (old: {
-      patches = (old.patches or [ ]) ++ [ ./patches/imv-buffer-scale.patch ];
-    });
-    settings.binds."<Escape>" = "quit";
+    initLua = ''
+      swayimg.imagelist.adjacent = true
+      swayimg.viewer.default_scale = "real"
+      swayimg.viewer.on_key("0", function()
+        swayimg.viewer.default_scale = "real"
+        swayimg.viewer.reset()
+      end)
+      swayimg.viewer.on_key("equal", function()
+        swayimg.viewer.default_scale = "optimal"
+        swayimg.viewer.reset()
+      end)
+    '';
   };
 
   # The screen reaches up around the notch (appledrm.show_notch, see the top)

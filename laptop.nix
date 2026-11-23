@@ -49,14 +49,11 @@ let
     tree                        # display files in a tree view
     unzip
     wget
-    nmap
-    tcpdump
     vulkan-tools
     yt-dlp
     ps_mem                      # accurately report the in core memory usage for a program
     fzy                         # a better fuzzy finder
     rlwrap
-    powertop                    # power comsumption
     ryzenadj                    # adjust power management settings
     lsof
     bash
@@ -201,10 +198,6 @@ in
   };
 
   services.network-manager-applet.enable = true;
-  services.tailscale-systray = {
-    enable = true;
-    theme = "dark:nobg";
-  };
 
   # This value determines the Home Manager release that your
   # configuration is compatible with. This helps avoid breakage

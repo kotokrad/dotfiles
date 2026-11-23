@@ -6,6 +6,7 @@ import Quickshell.Io
 // Codex's app-server, so the CLI handles auth and token refresh; started per fetch
 Singleton {
     id: codex
+    objectName: "codex"
     property var usage: null
     property date updated
     property date tried

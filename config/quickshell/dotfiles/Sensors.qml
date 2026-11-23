@@ -75,6 +75,7 @@ Island {
 
     Dropdown {
         id: procMenu
+        objectName: "sensors"
         target: sensors
         screen: sensors.bar.screen
 

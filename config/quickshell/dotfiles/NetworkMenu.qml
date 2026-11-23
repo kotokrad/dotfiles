@@ -127,6 +127,7 @@ ColumnLayout {
         // Line the text up with the headers; the hover background reaches into the padding
         Layout.leftMargin: -8
         Layout.rightMargin: -8
+        icon: "\u{f1de}"
         text: "Network settings…"
         onClicked: {
             menu.done();

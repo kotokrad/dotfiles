@@ -17,10 +17,11 @@ ShellRoot {
     BatteryNotifications {}
     Osd {}
     PolkitDialog {}
+    VpnSwitcher {}
 
     IpcHandler {
         target: "shell"
-        // `qs ipc call shell open quicksettings` (or calendar) on the focused screen;
+        // `qs ipc call shell open NAME` (a dropdown's objectName) on the focused screen;
         // returns the panel's bottom edge, 0 if there's no such panel
         function open(name: string): int {
             const panel = Ui.dropdowns.find(p => p.objectName === name && p.screen === Mango.focusedScreen);

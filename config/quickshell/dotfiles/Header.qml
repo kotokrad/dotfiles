@@ -1,44 +1,67 @@
 import QtQuick
 import QtQuick.Layouts
 
-// Dropdown section title with an on/off switch (network and VPN menus)
-RowLayout {
+// Dropdown section title with an on/off switch (network and VPN menus); the whole row toggles
+Item {
     id: header
     property string title
     property bool on
+    property bool pending
     signal toggled
 
     Layout.fillWidth: true
+    implicitWidth: row.implicitWidth
+    implicitHeight: row.implicitHeight
 
-    Txt {
-        Layout.fillWidth: true
-        text: header.title
-        font.pixelSize: Ui.menuFontSize
+    // Entry's size and hover, reaching into the dropdown's padding
+    Rectangle {
+        id: hoverBg
+        anchors.fill: parent
+        anchors.leftMargin: -8
+        anchors.rightMargin: -8
+        anchors.topMargin: -5
+        anchors.bottomMargin: -5
+        radius: Ui.radius
+        color: mouse.containsMouse ? Ui.bg2 : "transparent"
     }
 
-    Rectangle {
-        implicitWidth: 30
-        implicitHeight: 16
-        radius: height / 2
-        color: header.on ? Ui.accent : Ui.bg2
+    MouseArea {
+        id: mouse
+        anchors.fill: hoverBg
+        enabled: !header.pending
+        hoverEnabled: true
+        onClicked: header.toggled()
+    }
 
-        Rectangle {
-            x: header.on ? parent.width - width - 2 : 2
-            y: 2
-            width: 12
-            height: 12
-            radius: 6
-            color: Ui.fg
-            Behavior on x {
-                NumberAnimation {
-                    duration: 120
-                }
-            }
+    RowLayout {
+        id: row
+        anchors.fill: parent
+
+        Txt {
+            Layout.fillWidth: true
+            text: header.title
+            font.pixelSize: Ui.menuFontSize
         }
 
-        MouseArea {
-            anchors.fill: parent
-            onClicked: header.toggled()
+        Rectangle {
+            implicitWidth: 30
+            implicitHeight: 16
+            radius: height / 2
+            color: header.on ? Ui.accent : mouse.containsMouse ? Ui.bg3 : Ui.bg2
+
+            Rectangle {
+                x: header.pending ? (parent.width - width) / 2 : header.on ? parent.width - width - 2 : 2
+                y: 2
+                width: 12
+                height: 12
+                radius: 6
+                color: Ui.fg
+                Behavior on x {
+                    NumberAnimation {
+                        duration: 120
+                    }
+                }
+            }
         }
     }
 }
